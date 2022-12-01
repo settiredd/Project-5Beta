@@ -25,7 +25,7 @@ public class Server implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(4242);
+        ServerSocket serverSocket = new ServerSocket(2424);
 
         while (true) {
             Socket socket = serverSocket.accept();

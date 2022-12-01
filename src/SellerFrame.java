@@ -100,13 +100,14 @@ public class SellerFrame extends JFrame implements Runnable {
             try {
                 PrintWriter pw = new PrintWriter(socket.getOutputStream());
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+
                 if (e.getSource() == store) {
                     //TODO
                     System.out.println("store");
                 } else if (e.getSource() == message) {
                     //TODO
                     String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
-                            "Do you want to search for a customer? Click no to view a list of customers",
+                            "Click Yes to search for customer.\nClick No to view a list of customers.",
                             "Search Prompt", JOptionPane.YES_NO_OPTION));
 
                     if (choice == null) {
@@ -124,11 +125,23 @@ public class SellerFrame extends JFrame implements Runnable {
                             }
                             if (search.isEmpty()) {         //clicks yes but has no text
                                 JOptionPane.showMessageDialog(null, "Type in a customer " +
-                                                "username", "No input", JOptionPane.ERROR_MESSAGE);
+                                        "username", "No input", JOptionPane.ERROR_MESSAGE);
                             }
 
+                            pw.write("Search");           //writes command to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(username);
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(search);           //writes over user client is searching for
+                            pw.println();
+                            pw.flush();
+
                         } else if (choice.equals("1")) {            //no - view list
-                            pw.write("MessageOptions");
+                            pw.write("MessageOptions");         //writes command to server
                             pw.println();
                             pw.flush();
 
@@ -159,6 +172,24 @@ public class SellerFrame extends JFrame implements Runnable {
 
                                 String customerSelection = selectOption("Who do you want to message?",
                                         customerOptions, "Choose customer");
+
+                                if (customerSelection == null) {
+                                    return;
+                                } else {
+                                    pw.write("Search");
+                                    pw.println();
+                                    pw.flush();
+
+                                    if (!bfr.readLine().equals("blocked")) {
+                                        SwingUtilities.invokeLater(new ChatFrame(socket, username,
+                                                "seller", customerSelection, "customer"));
+                                        frame.dispose();
+                                    } else {
+                                        JOptionPane.showMessageDialog(null, "This user has" +
+                                                        " blocked you/You have blocked this user", "Block Error",
+                                                JOptionPane.ERROR_MESSAGE);
+                                    }
+                                }
                             }
                         }
                     }
@@ -182,7 +213,7 @@ public class SellerFrame extends JFrame implements Runnable {
                     System.out.println("logout");
                 }
             } catch (Exception a) {
-                JOptionPane.showMessageDialog(null, "An error has occurred! (SF 186)",
+                JOptionPane.showMessageDialog(null, "An error has occurred! (SF)",
                         "Error", JOptionPane.ERROR_MESSAGE);
             }
         }
