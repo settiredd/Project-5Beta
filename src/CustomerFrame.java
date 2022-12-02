@@ -116,6 +116,8 @@ public class CustomerFrame extends JFrame implements Runnable {
                                 JOptionPane.showMessageDialog(null, "Type in a store " +
                                         "name", "No input", JOptionPane.ERROR_MESSAGE);
                             }
+
+
                         } else if (choice.equals("1")) {            //no - view list
                             pw.write("MessageOptions");     //writes command to server
                             pw.println();
@@ -168,6 +170,8 @@ public class CustomerFrame extends JFrame implements Runnable {
                     String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Do you want to search for a customer? Click no to view a list of customers",
                             "Search Prompt", JOptionPane.YES_NO_OPTION));
+
+
                 }
                 case "Block Seller" -> {
                     //TODO
@@ -176,7 +180,8 @@ public class CustomerFrame extends JFrame implements Runnable {
                     //TODO
                 }
                 case "View Dashboard" -> {
-                    //TODO
+                    frame.dispose();
+                    SwingUtilities.invokeLater(new DashFrame(socket, username, "customer"));
                 }
                 case "Edit Account" -> {
                     //TODO
@@ -185,7 +190,8 @@ public class CustomerFrame extends JFrame implements Runnable {
                     //TODO
                 }
                 case "Logout" -> {
-                    //TODO
+                    frame.dispose();
+                    SwingUtilities.invokeLater(new LoginFrame(socket));
                 }
             }
 

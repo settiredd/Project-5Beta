@@ -136,7 +136,7 @@ public class CreateAccountFrame extends JFrame implements Runnable {
                             username = checkUsername;
                         } else {
                             JOptionPane.showMessageDialog(null, "Create a valid username " +
-                                    "(at least 8 characters, no semicolons or spaces).", "Invalid username",
+                                            "(at least 8 characters, no semicolons or spaces).", "Invalid username",
                                     JOptionPane.ERROR_MESSAGE);
                             userText.setText("");
                             goodUsername = false;

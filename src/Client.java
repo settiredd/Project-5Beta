@@ -21,25 +21,14 @@ public class Client {
     public static void main(String[] args) {
         Socket socket;
         try {
-            socket = new Socket("localhost", 4242);
-
-            String[] loginOptions = new String[]{"Login", "Create account", "Quit"};
-            String loginSelection = selectOption("What would you like to do?", loginOptions);
-            if (loginSelection == null || loginSelection.equals("Quit")) {
-                JOptionPane.showMessageDialog(null, "See you next time!", "Farewell",
-                        JOptionPane.INFORMATION_MESSAGE);
-            } else {
-                if (loginSelection.equals("Login")) {
-                    SwingUtilities.invokeLater(new LoginFrame(socket));
-                } else if (loginSelection.equals("Create account")) {
-                    SwingUtilities.invokeLater(new CreateAccountFrame(socket));
-                }
-            }
+            socket = new Socket("localhost", 4646);
+            SwingUtilities.invokeLater(new LoginFrame(socket));
 
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Connection to the server could not be " +
                             "established!",
                     "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
 
     }

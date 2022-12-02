@@ -17,6 +17,7 @@ public class Server implements Runnable {
     public static String password;
     public static String email;
     public static String status;
+    Object o = new Object();
 
     Socket socket;
 
@@ -25,7 +26,7 @@ public class Server implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(2424);
+        ServerSocket serverSocket = new ServerSocket(4646);
 
         while (true) {
             Socket socket = serverSocket.accept();
@@ -148,7 +149,18 @@ public class Server implements Runnable {
         return result;
     }
 
+    synchronized String userExists(String username) {
+        ArrayList<String> fileContents = new ArrayList<>();
+        if (!usersFile.exists()) {
+            return null;
+        } else {
+
+        }
+        return null;
+    }
+
     public void run() {
+
         try {
             if (!usersFile.exists()) {
                 usersFile.createNewFile();      //creates users file if it doesn't already exist
@@ -162,6 +174,7 @@ public class Server implements Runnable {
             if (!invisibleListFile.exists()) {      //creates invisibility file if it doesn't already exist
                 invisibleListFile.createNewFile();
             }
+
 
             PrintWriter pw = new PrintWriter(socket.getOutputStream());
             BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -211,54 +224,53 @@ public class Server implements Runnable {
                     }
                     case "MessageOptions" -> {
                         String user = bfr.readLine();
-                        ArrayList<String> fileContents;
-                        ArrayList<String> sendUsers = new ArrayList<>();
+                        String stat = bfr.readLine();
 
-                        if (usersFile.exists()) {
-                            System.out.println("here");
+                        if (stat.equals("seller")) {
+                            ArrayList<String> fileContents;
+                            ArrayList<String> sendUsers = new ArrayList<>();
 
-                            fileContents = readFile(usersFile);
-                            if (fileContents != null) {
-                                if (fileContents.size() > 0) {
-                                    for (String line : fileContents) {
-                                        String[] splitLine = line.split(";");
+                            if (usersFile.exists()) {
+                                synchronized (o) {                      //so file reading is concurrent
+                                    fileContents = readFile(usersFile);
+                                }
+                                if (fileContents != null) {
+                                    if (fileContents.size() > 0) {
+                                        for (String line : fileContents) {
+                                            String[] splitLine = line.split(";");
 
-                                        if (status.equals("seller")) {
-                                            if (splitLine[0].equals("customer")) {
-                                                String userToCheck = splitLine[1];
+                                            if (stat.equals("seller")) {
+                                                if (splitLine[0].equals("customer")) {
+                                                    String userToCheck = splitLine[1];
 
-                                                if (!isInvisible(user, userToCheck)) {
-                                                    sendUsers.add(userToCheck);
-                                                }
-                                            }
-                                        } else if (status.equals("customer")) {
-                                            if (splitLine[0].equals("seller")) {
-                                                String userToCheck = splitLine[1];
-
-                                                if (!isInvisible(user, userToCheck)) {
-                                                    sendUsers.add(userToCheck);
+                                                    if (!isInvisible(user, userToCheck)) {
+                                                        sendUsers.add(userToCheck);
+                                                    }
                                                 }
                                             }
                                         }
 
-                                    }
+                                        if (sendUsers.size() == 0) {
+                                            pw.write("None");
+                                            pw.println();
+                                            pw.flush();
+                                        } else {
+                                            pw.write("Yes");        //lets client know users exist
+                                            pw.println();
+                                            pw.flush();
 
-                                    if (sendUsers.size() == 0) {
-                                        pw.write("None");
-                                        pw.println();
-                                        pw.flush();
-                                    } else {
-                                        pw.write("Yes");        //lets client know users exist
-                                        pw.println();
-                                        pw.flush();
+                                            for (int i = 0; i < sendUsers.size(); i++) {
+                                                pw.write(sendUsers.get(i));
+                                                pw.println();
+                                                pw.flush();
+                                            }
 
-                                        for (int i = 0; i < sendUsers.size(); i++) {
-                                            pw.write(sendUsers.get(i));
+                                            pw.write("End");
                                             pw.println();
                                             pw.flush();
                                         }
-
-                                        pw.write("End");
+                                    } else {
+                                        pw.write("None");
                                         pw.println();
                                         pw.flush();
                                     }
@@ -267,12 +279,114 @@ public class Server implements Runnable {
                                     pw.println();
                                     pw.flush();
                                 }
-                            } else {
-                                pw.write("None");
+                            }
+                        } else if (stat.equals("customer")) {
+
+                        }
+                    }
+                    case "Search" -> {
+                        String user = bfr.readLine();
+                        String search = bfr.readLine();
+                        String stat = bfr.readLine();
+
+                        if (stat.equals("seller")) {
+
+                            if (isInvisible(user, search)) {
+                                pw.write("No");             //cannot message users who are invisible
                                 pw.println();
                                 pw.flush();
+                            } else if (isBlocked(user, search)) {
+                                pw.write("blocked");            //writes to client that user is blocked
+                                pw.println();
+                                pw.flush();
+                            } else {
+                                ArrayList<String> fileContents;
+                                boolean canMessage = false;
+                                if (usersFile.exists()) {
+                                    synchronized (o) {                      //so file reading is concurrent
+                                        fileContents = readFile(usersFile);
+                                    }
+                                    if (fileContents != null) {
+                                        if (fileContents.size() > 0) {
+                                            for (String line : fileContents) {
+                                                String[] splitLine = line.split(";");
+
+                                                if (splitLine[1].equals(search)) {
+                                                    if (splitLine[0].equals("customer")) {
+                                                        pw.write("Yes");      //checks if searched is a customer
+                                                        pw.println();
+                                                        pw.flush();
+
+                                                        canMessage = true;
+                                                    }
+                                                }
+                                            }
+
+                                            if (!canMessage) {
+                                                pw.write("No");      //user doesn't exist or is a seller
+                                                pw.println();
+                                                pw.flush();
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                        } else if (stat.equals("customer")) {
+
+                        }
+
+                    }
+                    case "Create Store" -> {
+                        String user = bfr.readLine();
+                        String storeName = bfr.readLine();
+                        ArrayList<String> fileContents;
+                        boolean canCreate = true;
+
+                        synchronized (o) {
+                            fileContents = readFile(storesFile);        //concurrently reads file
+                        }
+
+                        if (fileContents != null) {             //does nothing is file contents are null
+                            if (fileContents.size() > 0) {
+                                for (String line : fileContents) {
+                                    String[] splitLine = line.split(";");
+
+                                    if (splitLine[1].equals(storeName)) {
+                                        canCreate = false;          //cannot create if store name is being used
+                                    }
+                                }
                             }
                         }
+
+                        if (canCreate) {
+                            pw.write("Yes");
+                            pw.println();
+                            pw.flush();
+
+                            writeStore(user, storeName);
+                        } else {
+                            pw.write("No");
+                            pw.println();
+                            pw.flush();
+                        }
+                    } case "Edit" -> {
+                        String user = bfr.readLine();
+                        String itemToEdit = bfr.readLine();
+
+                        String[] infoSplit = getUserInfo(user).split(";");
+
+                        if (itemToEdit.equals("Username")) {
+                            String userUsername = infoSplit[1];         //gets user's current username
+
+                        } else if (itemToEdit.equals("Password")) {
+                            String userPassword = infoSplit[2];         //gets user's current password
+
+                        } else if (itemToEdit.equals("Email")) {
+                            String userEmail = infoSplit[3];            //gets user's current email
+
+                        }
+
                     }
                 }
             }
@@ -281,6 +395,43 @@ public class Server implements Runnable {
             JOptionPane.showMessageDialog(null, "A problem has occurred (S 143)", "Error",
                     JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+            e.printStackTrace();
+        }
+
+    }
+
+    synchronized String getUserInfo(String user) {
+        String userInfo = "";
+        try {
+            if (usersFile.exists()) {
+                BufferedReader bfr = new BufferedReader(new FileReader(usersFile));
+                String line;
+
+                while ((line = bfr.readLine()) != null) {
+                    String[] splitLine = line.split(";");
+
+                    if (splitLine[1].equals(user)) {
+                        userInfo = line;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "An issue occurred in getting user",
+                    "Error", JOptionPane.ERROR_MESSAGE);
+        }
+        return userInfo;
+    }
+
+    synchronized void writeStore(String user, String storeName) {
+        try {
+            if (storesFile.exists()) {
+                BufferedWriter bfr = new BufferedWriter(new FileWriter(storesFile, true));
+                bfr.write(username + ";" + storeName + "\n");
+                bfr.close();
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "An issue occurred in writing store",
+                    "Error", JOptionPane.ERROR_MESSAGE);
         }
     }
 

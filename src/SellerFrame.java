@@ -102,10 +102,40 @@ public class SellerFrame extends JFrame implements Runnable {
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
                 if (e.getSource() == store) {
-                    //TODO
-                    System.out.println("store");
+                    String storeName = JOptionPane.showInputDialog(null,
+                            "Type in the name of your new store", "Store creation",
+                            JOptionPane.QUESTION_MESSAGE);
+
+                    if (storeName == null) {           //cancel option
+                        return;
+                    }
+                    if (storeName.isEmpty()) {         //clicks yes but has no text
+                        JOptionPane.showMessageDialog(null, "Type something in",
+                                "No input", JOptionPane.ERROR_MESSAGE);
+                    }
+
+                    pw.write("Create Store");       //writes command to server
+                    pw.println();
+                    pw.flush();
+
+                    pw.write(username);       //writes username to server
+                    pw.println();
+                    pw.flush();
+
+                    pw.write(storeName);
+                    pw.println();
+                    pw.flush();
+
+                    String response = bfr.readLine();
+                    if (response.equals("Yes")) {
+                        JOptionPane.showMessageDialog(null, "Successfully created your store",
+                                "Success!", JOptionPane.INFORMATION_MESSAGE);
+                    } else if (response.equals("No")) {
+                        JOptionPane.showMessageDialog(null, "This store name is taken",
+                                "Store not Created!", JOptionPane.INFORMATION_MESSAGE);
+                    }
+
                 } else if (e.getSource() == message) {
-                    //TODO
                     String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Click Yes to search for customer.\nClick No to view a list of customers.",
                             "Search Prompt", JOptionPane.YES_NO_OPTION));
@@ -140,12 +170,36 @@ public class SellerFrame extends JFrame implements Runnable {
                             pw.println();
                             pw.flush();
 
+                            pw.write("seller");
+                            pw.println();
+                            pw.flush();
+
+                            String response = bfr.readLine();
+
+                            if (response.equals("No")) {
+                                JOptionPane.showMessageDialog(null, "This user doesn't " +
+                                                "exist or this user is also a seller",
+                                        "Error", JOptionPane.ERROR_MESSAGE);
+                            } else if (response.equals("blocked")) {
+                                JOptionPane.showMessageDialog(null, "This user has" +
+                                                " blocked you/You have blocked this user", "Block Error",
+                                        JOptionPane.ERROR_MESSAGE);
+                            } else if (response.equals("Yes")) {
+                                frame.dispose();
+                                SwingUtilities.invokeLater(new ChatFrame(socket, username, "seller",
+                                        search, "customer"));
+                            }
+
                         } else if (choice.equals("1")) {            //no - view list
                             pw.write("MessageOptions");         //writes command to server
                             pw.println();
                             pw.flush();
 
                             pw.write(username);
+                            pw.println();
+                            pw.flush();
+
+                            pw.write("seller");
                             pw.println();
                             pw.flush();
 
@@ -180,6 +234,18 @@ public class SellerFrame extends JFrame implements Runnable {
                                     pw.println();
                                     pw.flush();
 
+                                    pw.write(username);
+                                    pw.println();
+                                    pw.flush();
+
+                                    pw.write(customerSelection);
+                                    pw.println();
+                                    pw.flush();
+
+                                    pw.write("seller");
+                                    pw.println();
+                                    pw.flush();
+
                                     if (!bfr.readLine().equals("blocked")) {
                                         SwingUtilities.invokeLater(new ChatFrame(socket, username,
                                                 "seller", customerSelection, "customer"));
@@ -200,17 +266,37 @@ public class SellerFrame extends JFrame implements Runnable {
                     //TODO
                     System.out.println("convos");
                 } else if (e.getSource() == dash) {
-                    //TODO
-                    System.out.println("dash");
+                    frame.dispose();
+                    SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
+
                 } else if (e.getSource() == edit) {
                     //TODO
-                    System.out.println("edit");
+                    String[] editOptions = {"Username", "Password", "Email"};
+                    String editSelection = selectOption("What would you like to edit", editOptions,
+                            "Edit Account");
+
+                    if (editSelection == null) {
+                        return;
+                    } else {
+                        pw.write("Edit");
+                        pw.println();
+                        pw.flush();
+
+                        pw.write(username);
+                        pw.println();
+                        pw.flush();
+
+                        pw.write(editSelection);
+                        pw.println();
+                        pw.flush();
+                    }
+
                 } else if (e.getSource() == delete) {
                     //TODO
                     System.out.println("delete");
                 } else if (e.getSource() == logout) {
-                    //TODO
-                    System.out.println("logout");
+                    frame.dispose();
+                    SwingUtilities.invokeLater(new LoginFrame(socket));
                 }
             } catch (Exception a) {
                 JOptionPane.showMessageDialog(null, "An error has occurred! (SF)",

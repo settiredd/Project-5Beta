@@ -3,6 +3,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
@@ -20,47 +21,56 @@ public class LoginFrame extends JFrame implements Runnable {
     }
 
     public void run() {
-        frame = new JFrame("Login");
-        frame.setSize(275, 200);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
+        String[] loginOptions = new String[]{"Login", "Create account", "Quit"};
+        String loginSelection = selectOption("What would you like to do?", loginOptions);
+        if (loginSelection == null || loginSelection.equals("Quit")) {
+            JOptionPane.showMessageDialog(null, "See you next time!", "Farewell",
+                    JOptionPane.INFORMATION_MESSAGE);
+        } else if (loginSelection.equals("Create account")) {
+            SwingUtilities.invokeLater(new CreateAccountFrame(socket));
+        } else if (loginSelection.equals("Login")) {
+            frame = new JFrame("Login");
+            frame.setSize(275, 200);
+            frame.setLocationRelativeTo(null);
+            frame.setLayout(new GridBagLayout());
+            GridBagConstraints gbc = new GridBagConstraints();
 
-        usernameText = new JTextField(15);
-        passwordText = new JPasswordField(15);
-        JLabel user = new JLabel("Username:");
-        JLabel pass = new JLabel("Password:");
+            usernameText = new JTextField(15);
+            passwordText = new JPasswordField(15);
+            JLabel user = new JLabel("Username:");
+            JLabel pass = new JLabel("Password:");
 
-        loginButton = new JButton("Login");
-        loginButton.addActionListener(actionListener);
+            loginButton = new JButton("Login");
+            loginButton.addActionListener(actionListener);
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.gridwidth = 1;
-        gbc.gridheight = 1;
-        frame.add(user, gbc);
+            gbc.gridx = 0;
+            gbc.gridy = 0;
+            gbc.gridwidth = 1;
+            gbc.gridheight = 1;
+            frame.add(user, gbc);
 
-        gbc.gridx = 1;
-        gbc.gridwidth = 5;
-        gbc.weightx = 1;
-        frame.add(usernameText, gbc);
+            gbc.gridx = 1;
+            gbc.gridwidth = 5;
+            gbc.weightx = 1;
+            frame.add(usernameText, gbc);
 
-        gbc.gridy = 1;
-        gbc.gridx = 0;
-        gbc.gridwidth = 1;
-        frame.add(pass, gbc);
+            gbc.gridy = 1;
+            gbc.gridx = 0;
+            gbc.gridwidth = 1;
+            frame.add(pass, gbc);
 
-        gbc.gridx = 1;
-        gbc.gridwidth = 5;
-        frame.add(passwordText, gbc);
+            gbc.gridx = 1;
+            gbc.gridwidth = 5;
+            frame.add(passwordText, gbc);
 
-        gbc.gridx = 2;
-        gbc.gridy = 6;
-        frame.add(loginButton, gbc);
+            gbc.gridx = 2;
+            gbc.gridy = 6;
+            frame.add(loginButton, gbc);
 
-        frame.setVisible(true);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.setVisible(true);
+            frame.setResizable(false);
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        }
     }
 
     ActionListener actionListener = new ActionListener() {
@@ -127,5 +137,16 @@ public class LoginFrame extends JFrame implements Runnable {
             }
         }
     };
+
+    public static String selectOption(String prompt, String[] options) {
+        String selection;
+        try {
+            selection = (String) JOptionPane.showInputDialog(null, prompt, "Options",
+                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        } catch (NullPointerException e) {
+            return null;
+        }
+        return selection;
+    }
 
 }
