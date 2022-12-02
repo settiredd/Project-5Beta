@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.regex.Pattern;
 
 public class CustomerFrame extends JFrame implements Runnable {
     Socket socket;
@@ -136,6 +137,92 @@ public class CustomerFrame extends JFrame implements Runnable {
                 } else if (e.getSource() == dash) {
 
                 } else if (e.getSource() == edit) {
+                    String[] editOptions = {"Username", "Password", "Email"};   //user chooses what they want to edit
+                    String editSelection = selectOption("What would you like to edit", editOptions,
+                            "Edit Account");
+
+                    if (editSelection == null) {
+                        return;
+                    } else {
+                        String newChange = JOptionPane.showInputDialog(null, "What is your new "
+                                + editSelection + "?", "Edit " + editSelection, JOptionPane.QUESTION_MESSAGE);
+
+                        if (newChange == null) {           //cancel option
+                            return;
+                        }
+                        if (newChange.isEmpty()) {         //clicks yes but has no text
+                            JOptionPane.showMessageDialog(null, "You have not inputted anything"
+                                    , "No input", JOptionPane.ERROR_MESSAGE);
+                        }
+
+                        boolean validChange = false;
+                        if (editSelection.equals("Username") || editSelection.equals("Password")) {         //checks username is valid
+
+                            if (newChange.length() >= 8 && !newChange.contains(" ")
+                                    && !newChange.contains(";")) {
+                                validChange = true;
+                            }
+                            if (!validChange) {                     //tells client they put invalid username
+                                JOptionPane.showMessageDialog(null, "Input a valid " +
+                                                "username/password " + "(at least 8 characters, no semicolons or " +
+                                                "spaces).",
+                                        "Invalid username/password", JOptionPane.ERROR_MESSAGE);
+                            }
+                        } else if (editSelection.equals("Email")) {     //checks if email is valid
+                            String emailRegex = "^[a-zA-Z0-9_+&*-]+" +
+                                    "(?:\\.[a-zA-Z0-9_+&*-]+)*@" +
+                                    "(?:[a-zA-Z0-9-]+\\.)+" +
+                                    "[a-zA-Z]{2,7}$";
+                            Pattern checkValidity = Pattern.compile(emailRegex);
+                            if (checkValidity.matcher(newChange).matches()) {
+                                validChange = true;
+
+                            }
+                            if (!validChange) {         //tells client they put invalid email
+                                JOptionPane.showMessageDialog(null, "Enter a valid email",
+                                        "Invalid email", JOptionPane.ERROR_MESSAGE);
+                            }
+                        }
+
+                        if (validChange) {
+                            pw.write("Edit");           //writes over the command to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(username);             //writes over username to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(editSelection);        //writes over what the user wants to edit
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(newChange);            //writes over what the user is changing it to
+                            pw.println();
+                            pw.flush();
+
+                            String response = bfr.readLine();
+
+                            switch (response) {
+                                case "Yes" -> {
+                                    JOptionPane.showMessageDialog(null, "Successfully edited!",
+                                            "Success!", JOptionPane.INFORMATION_MESSAGE);
+                                    if (editSelection.equals("Username")) {
+                                        username = newChange;
+                                    }
+                                }
+                                case "Same" -> {
+                                    JOptionPane.showMessageDialog(null, "This is your current "
+                                            + editSelection, "Unable to edit!", JOptionPane.ERROR_MESSAGE);
+                                }
+                                case "Used" -> {
+                                    JOptionPane.showMessageDialog(null, "This " +
+                                                    editSelection + " is being used!", "Unable to edit!",
+                                            JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+                        }
+                    }
 
                 } else if (e.getSource() == delete) {
 
@@ -148,57 +235,6 @@ public class CustomerFrame extends JFrame implements Runnable {
             }
         }
     };
-
-
-    public void run1() {
-        try {
-            PrintWriter pw = new PrintWriter(socket.getOutputStream());
-            BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-            String[] loginOptions = new String[]{"Message Store", "Block Seller",
-                    "View Conversations", "View Dashboard", "Edit Account", "Delete Account", "Logout"};
-
-            String userSelection = selectOption("What would you like to do?", loginOptions,
-                    "Hello " + username);
-
-            if (userSelection == null) {
-                return;
-            }
-
-            switch (userSelection) {
-                case "Message Store" -> {
-                    String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
-                            "Do you want to search for a customer? Click no to view a list of customers",
-                            "Search Prompt", JOptionPane.YES_NO_OPTION));
-
-
-                }
-                case "Block Seller" -> {
-                    //TODO
-                }
-                case "View Conversations" -> {
-                    //TODO
-                }
-                case "View Dashboard" -> {
-                    frame.dispose();
-                    SwingUtilities.invokeLater(new DashFrame(socket, username, "customer"));
-                }
-                case "Edit Account" -> {
-                    //TODO
-                }
-                case "Delete Account" -> {
-                    //TODO
-                }
-                case "Logout" -> {
-                    frame.dispose();
-                    SwingUtilities.invokeLater(new LoginFrame(socket));
-                }
-            }
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
 
     public static String selectOption(String prompt, String[] options, String title) {
         String selection;

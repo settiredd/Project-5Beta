@@ -64,27 +64,17 @@ public class Server implements Runnable {
                                 }
                             }
                             if (!userExists) {
-                                /*JOptionPane.showMessageDialog(null, "That user does not exist!",
-                                        "Error", JOptionPane.ERROR_MESSAGE); */
                                 return false;
                             }
                             if (userExists && !correctPassword) {
-                                /*JOptionPane.showMessageDialog(null,
-                                        "Incorrect Password!",
-                                        "Error", JOptionPane.ERROR_MESSAGE); */
                                 return false;
                             }
                         } else {
-                            /*JOptionPane.showMessageDialog(null, "No users exist yet!",
-                                    "Error", JOptionPane.ERROR_MESSAGE); */
-
                             return false;
                         }
                     }
                 }
             } else {
-                /*JOptionPane.showMessageDialog(null, "No users exist yet!", "Error",
-                        JOptionPane.ERROR_MESSAGE); */
                 return false;
             }
 
@@ -370,21 +360,158 @@ public class Server implements Runnable {
                             pw.println();
                             pw.flush();
                         }
-                    } case "Edit" -> {
-                        String user = bfr.readLine();
-                        String itemToEdit = bfr.readLine();
+                    }
+                    case "Edit" -> {
+                        String user = bfr.readLine();           //gets username
+                        String itemToEdit = bfr.readLine();     //gets what the user is changing
+                        String newItem = bfr.readLine();        //gets what the user wants to change it to
+                        ArrayList<String> fileContents;
+                        synchronized (o) {                      //concurrently reads file
+                            fileContents = readFile(usersFile);
+                        }
 
-                        String[] infoSplit = getUserInfo(user).split(";");
+                        boolean beingUsed = false;
+                        boolean same = false;
 
-                        if (itemToEdit.equals("Username")) {
-                            String userUsername = infoSplit[1];         //gets user's current username
+                        String[] infoSplit;
+                        synchronized (o) {
+                            infoSplit = getUserInfo(user).split(";");
+                        }
 
-                        } else if (itemToEdit.equals("Password")) {
-                            String userPassword = infoSplit[2];         //gets user's current password
+                        switch (itemToEdit) {
+                            case "Username":
+                                String userUsername = infoSplit[1];         //gets user's current username
 
-                        } else if (itemToEdit.equals("Email")) {
-                            String userEmail = infoSplit[3];            //gets user's current email
+                                if (userUsername.equals(newItem)) {         //checks if user put their current username
+                                    same = true;
+                                } else {
+                                    if (fileContents != null) {
+                                        for (String line : fileContents) {
+                                            String[] splitLine = line.split(";");
 
+                                            if (splitLine[1].equals(newItem)) {
+                                                beingUsed = true;           //if username is already being used
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (!beingUsed && !same) {
+                                    pw.write("Yes");
+                                    pw.println();
+                                    pw.flush();
+
+                                    for (int i = 0; i < fileContents.size(); i++) {
+                                        if (fileContents.get(i).equals(getUserInfo(user))) {
+                                            fileContents.remove(i);
+
+                                            fileContents.add(getUserInfo(user).replace(infoSplit[1], newItem));
+                                        }
+                                    }
+                                    synchronized (o) {              //concurrently writes to file
+                                        BufferedWriter userWriter =
+                                                new BufferedWriter(new FileWriter(usersFile, false));
+                                        for (int i = 0; i < fileContents.size(); i++) {
+                                            userWriter.write(fileContents.get(i) + "\n");
+                                        }
+                                        userWriter.close();
+                                    }
+                                } else if (same) {
+                                    pw.write("Same");           //tells client username is same
+                                    pw.println();
+                                    pw.flush();
+                                } else if (beingUsed) {
+                                    pw.write("Used");           //tells client that username is being used
+                                    pw.println();
+                                    pw.flush();
+                                }
+
+                                break;
+                            case "Password":
+                                String userPassword = infoSplit[2];         //gets user's current password
+
+                                if (userPassword.equals(newItem)) {         //checks if user put their current password
+                                    same = true;
+                                }
+
+                                if (same) {
+                                    pw.write("Same");    //tells user that they input their current password
+                                    pw.println();
+                                    pw.flush();
+                                } else {
+                                    pw.write("Yes");
+                                    pw.println();
+                                    pw.flush();
+
+                                    for (int i = 0; i < fileContents.size(); i++) {
+                                        if (fileContents.get(i).equals(getUserInfo(user))) {
+                                            fileContents.remove(i);
+
+                                            fileContents.add(getUserInfo(user).replace(infoSplit[2], newItem));
+                                        }
+                                    }
+                                    synchronized (o) {              //concurrently writes to file
+                                        BufferedWriter passWriter =
+                                                new BufferedWriter(new FileWriter(usersFile, false));
+                                        for (int i = 0; i < fileContents.size(); i++) {
+                                            passWriter.write(fileContents.get(i) + "\n");
+                                        }
+                                        passWriter.close();
+                                    }
+                                }
+
+
+                                break;
+                            case "Email":
+                                String userEmail = infoSplit[3];            //gets user's current email
+
+                                if (userEmail.equals(newItem)) {         //checks if user put their current email
+                                    same = true;
+                                } else {
+                                    if (fileContents != null) {
+                                        for (String line : fileContents) {
+                                            String[] splitLine = line.split(";");
+
+                                            if (splitLine[3].equals(newItem)) {
+                                                beingUsed = true;           //if username is already being used
+                                                break;
+                                            }
+                                        }
+                                    }
+                                }
+
+                                if (!beingUsed && !same) {
+                                    pw.write("Yes");
+                                    pw.println();
+                                    pw.flush();
+
+                                    for (int i = 0; i < fileContents.size(); i++) {
+                                        if (fileContents.get(i).equals(getUserInfo(user))) {
+                                            fileContents.remove(i);
+
+                                            fileContents.add(getUserInfo(user).replace(infoSplit[3], newItem));
+                                        }
+                                    }
+                                    synchronized (o) {              //concurrently writes to file
+                                        BufferedWriter emailWriter =
+                                                new BufferedWriter(new FileWriter(usersFile, false));
+                                        for (int i = 0; i < fileContents.size(); i++) {
+                                            emailWriter.write(fileContents.get(i) + "\n");
+                                        }
+                                        emailWriter.close();
+                                    }
+                                } else if (same) {
+                                    pw.write("Same");           //tells client email is same
+                                    pw.println();
+                                    pw.flush();
+                                } else if (beingUsed) {
+                                    pw.write("Used");           //tells client that email is being used
+                                    pw.println();
+                                    pw.flush();
+                                }
+
+                                break;
                         }
 
                     }
@@ -395,7 +522,7 @@ public class Server implements Runnable {
             JOptionPane.showMessageDialog(null, "A problem has occurred (S 143)", "Error",
                     JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-            e.printStackTrace();
+
         }
 
     }
