@@ -20,7 +20,7 @@ public class ChatFrame extends JFrame implements Runnable {
     JButton delete;
     JTextField message;
     JButton sendFile;
-    JButton exportConvo;
+    JButton export;
 
     public ChatFrame(Socket socket, String username, String userStatus, String recipient,
                      String recipientStatus) {
@@ -34,7 +34,7 @@ public class ChatFrame extends JFrame implements Runnable {
     @Override
     public void run() {
         frame = new JFrame(username + " and " + recipient);
-        frame.setSize(500, 500);
+        frame.setSize(700, 500);
         frame.setLayout(new BorderLayout());
         frame.setLocationRelativeTo(null);
 
@@ -57,7 +57,10 @@ public class ChatFrame extends JFrame implements Runnable {
         delete = new JButton("Delete Message");
         delete.addActionListener(actionListener);
 
-        message = new JTextField(20);
+        export = new JButton("Export conversation");
+        export.addActionListener(actionListener);
+
+        message = new JTextField(30);
 
         JPanel bottom = new JPanel();
         bottom.add(send);
@@ -68,6 +71,7 @@ public class ChatFrame extends JFrame implements Runnable {
         top.add(exit);
         top.add(edit);
         top.add(delete);
+        top.add(export);
 
         frame.add(scroll, BorderLayout.CENTER);
         frame.add(bottom, BorderLayout.SOUTH);

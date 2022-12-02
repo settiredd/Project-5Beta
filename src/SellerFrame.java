@@ -291,7 +291,8 @@ public class SellerFrame extends JFrame implements Runnable {
                         }
 
                         boolean validChange = false;
-                        if (editSelection.equals("Username") || editSelection.equals("Password")) {         //checks username is valid
+                        if (editSelection.equals("Username") || editSelection.equals("Password")) {
+                            //checks username is valid
 
                             if (newChange.length() >= 8 && !newChange.contains(" ")
                                     && !newChange.contains(";")) {

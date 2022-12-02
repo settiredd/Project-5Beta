@@ -64,27 +64,17 @@ public class Server implements Runnable {
                                 }
                             }
                             if (!userExists) {
-                                /*JOptionPane.showMessageDialog(null, "That user does not exist!",
-                                        "Error", JOptionPane.ERROR_MESSAGE); */
                                 return false;
                             }
                             if (userExists && !correctPassword) {
-                                /*JOptionPane.showMessageDialog(null,
-                                        "Incorrect Password!",
-                                        "Error", JOptionPane.ERROR_MESSAGE); */
                                 return false;
                             }
                         } else {
-                            /*JOptionPane.showMessageDialog(null, "No users exist yet!",
-                                    "Error", JOptionPane.ERROR_MESSAGE); */
-
                             return false;
                         }
                     }
                 }
             } else {
-                /*JOptionPane.showMessageDialog(null, "No users exist yet!", "Error",
-                        JOptionPane.ERROR_MESSAGE); */
                 return false;
             }
 
@@ -96,8 +86,8 @@ public class Server implements Runnable {
     }
 
     synchronized String checkCreation(String stat, String user, String pass, String ema) {
-        boolean userUsed = false;
-        boolean emaUsed = false;
+        boolean userUsed = false;           //checks if wanted username is used
+        boolean emaUsed = false;            //checks if wanted email is used
         String result = "";
         try {
             ArrayList<String> fileContents;
@@ -107,11 +97,11 @@ public class Server implements Runnable {
                     if (fileContents.size() > 0) {
                         for (String line : fileContents) {
                             String[] splitLine = line.split(";");
-                            if (splitLine[1].equals(user)) {
+                            if (splitLine[1].equals(user)) {            //compares usernames
                                 userUsed = true;
                                 break;
                             } else if (splitLine[3].equals(ema)) {
-                                emaUsed = true;
+                                emaUsed = true;                         //compares emails
                                 break;
                             }
                         }
@@ -125,38 +115,27 @@ public class Server implements Runnable {
                 }
 
                 if (!userUsed && !emaUsed) {
-                    result = "Yes";
+                    result = "Yes";                     //when "Yes" this user is successfully created
 
                     BufferedWriter userWriter = new BufferedWriter(new FileWriter(usersFile, true));
                     userWriter.write(stat + ";" + user + ";" + pass + ";" + ema);
                     userWriter.write("\n");
-                    userWriter.close();
+                    userWriter.close();                         //writes new user to users.txt file
                 } else {
                     if (userUsed) {
-                        result = "No-Username";
+                        result = "No-Username";         //tells client this username is being used
                     } else if (emaUsed) {
-                        result = "No-Email";
+                        result = "No-Email";            //tells client this email is being used
                     }
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An issue occurred (S 101)", "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            result = "No";          //handles any exception that may happen without error
         }
         if (result.isEmpty()) {
             result = "No";
         }
         return result;
-    }
-
-    synchronized String userExists(String username) {
-        ArrayList<String> fileContents = new ArrayList<>();
-        if (!usersFile.exists()) {
-            return null;
-        } else {
-
-        }
-        return null;
     }
 
     public void run() {
@@ -189,11 +168,9 @@ public class Server implements Runnable {
                 }
 
                 switch (cmd) {
-                    case "Login" -> {
+                    case "Login" -> {                               //user is logging in
                         String checkUsername = bfr.readLine();
                         String checkPassword = bfr.readLine();
-
-                        //username = checkUsername;
 
                         if (userPresent(checkUsername, checkPassword)) {
                             pw.write("Yes");      //writes yes to LoginFrame if user exists and correct password
@@ -223,8 +200,8 @@ public class Server implements Runnable {
                         //username = user;
                     }
                     case "MessageOptions" -> {
-                        String user = bfr.readLine();
-                        String stat = bfr.readLine();
+                        String user = bfr.readLine();           //gets username
+                        String stat = bfr.readLine();           //gets username
 
                         if (stat.equals("seller")) {
                             ArrayList<String> fileContents;
@@ -244,14 +221,14 @@ public class Server implements Runnable {
                                                     String userToCheck = splitLine[1];
 
                                                     if (!isInvisible(user, userToCheck)) {
-                                                        sendUsers.add(userToCheck);
+                                                        sendUsers.add(userToCheck);  //does not list if user invisible
                                                     }
                                                 }
                                             }
                                         }
 
                                         if (sendUsers.size() == 0) {
-                                            pw.write("None");
+                                            pw.write("None");       //tells user that there is no one to message
                                             pw.println();
                                             pw.flush();
                                         } else {
@@ -260,27 +237,27 @@ public class Server implements Runnable {
                                             pw.flush();
 
                                             for (int i = 0; i < sendUsers.size(); i++) {
-                                                pw.write(sendUsers.get(i));
+                                                pw.write(sendUsers.get(i));    //sends possible recipients to client
                                                 pw.println();
                                                 pw.flush();
                                             }
 
-                                            pw.write("End");
+                                            pw.write("End");    //lets client know that recipients list is done
                                             pw.println();
                                             pw.flush();
                                         }
                                     } else {
-                                        pw.write("None");
+                                        pw.write("None");       //no users to message
                                         pw.println();
                                         pw.flush();
                                     }
                                 } else {
-                                    pw.write("None");
+                                    pw.write("None");           //no users to message
                                     pw.println();
                                     pw.flush();
                                 }
                             }
-                        } else if (stat.equals("customer")) {
+                        } else if (stat.equals("customer")) {       //TODO
 
                         }
                     }
@@ -360,13 +337,13 @@ public class Server implements Runnable {
                         }
 
                         if (canCreate) {
-                            pw.write("Yes");
+                            pw.write("Yes");        //tells client that store was created
                             pw.println();
                             pw.flush();
 
                             writeStore(user, storeName);
                         } else {
-                            pw.write("No");
+                            pw.write("No");         //tells client store couldn't be created
                             pw.println();
                             pw.flush();
                         }

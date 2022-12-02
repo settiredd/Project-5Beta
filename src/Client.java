@@ -7,16 +7,6 @@ public class Client {
     public Client (Socket socket) {
         this.socket = socket;
     }
-    public static String selectOption(String prompt, String[] options) {
-        String selection;
-        try {
-            selection = (String) JOptionPane.showInputDialog(null, prompt, "Options",
-                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
-        } catch (NullPointerException e) {
-            return null;
-        }
-        return selection;
-    }
 
     public static void main(String[] args) {
         Socket socket;
