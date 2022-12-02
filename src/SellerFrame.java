@@ -360,8 +360,39 @@ public class SellerFrame extends JFrame implements Runnable {
                     }
 
                 } else if (e.getSource() == delete) {
-                    //TODO
-                    System.out.println("delete");
+                    String deleteConfirm = String.valueOf(JOptionPane.showConfirmDialog(null,
+                            "Are you sure you want to delete your account?",
+                            "Account Deletion", JOptionPane.YES_NO_OPTION));
+
+                    if (deleteConfirm == null) {
+                        return;
+                    } else {
+                        if (deleteConfirm.isEmpty()) {
+                            return;
+                        }
+                    }
+                    if (deleteConfirm.equals("0")) {
+                        pw.write("Delete");
+                        pw.println();
+                        pw.flush();
+
+                        pw.write(username);
+                        pw.println();
+                        pw.flush();
+
+                        String response = bfr.readLine();
+                        if (response.equals("Success")) {
+                            JOptionPane.showMessageDialog(null, "Your account was deleted",
+                                    "Success!", JOptionPane.INFORMATION_MESSAGE);
+                            frame.dispose();
+                            SwingUtilities.invokeLater(new LoginFrame(socket));
+                        } else {
+                            JOptionPane.showMessageDialog(null, "Unable to delete account",
+                                    "Deletion Failure", JOptionPane.ERROR_MESSAGE);
+                        }
+
+                    }
+
                 } else if (e.getSource() == logout) {
                     frame.dispose();
                     SwingUtilities.invokeLater(new LoginFrame(socket));

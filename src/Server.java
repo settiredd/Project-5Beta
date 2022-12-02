@@ -64,17 +64,27 @@ public class Server implements Runnable {
                                 }
                             }
                             if (!userExists) {
+                                /*JOptionPane.showMessageDialog(null, "That user does not exist!",
+                                        "Error", JOptionPane.ERROR_MESSAGE); */
                                 return false;
                             }
                             if (userExists && !correctPassword) {
+                                /*JOptionPane.showMessageDialog(null,
+                                        "Incorrect Password!",
+                                        "Error", JOptionPane.ERROR_MESSAGE); */
                                 return false;
                             }
                         } else {
+                            /*JOptionPane.showMessageDialog(null, "No users exist yet!",
+                                    "Error", JOptionPane.ERROR_MESSAGE); */
+
                             return false;
                         }
                     }
                 }
             } else {
+                /*JOptionPane.showMessageDialog(null, "No users exist yet!", "Error",
+                        JOptionPane.ERROR_MESSAGE); */
                 return false;
             }
 
@@ -510,8 +520,42 @@ public class Server implements Runnable {
                                     pw.println();
                                     pw.flush();
                                 }
-
                                 break;
+                        }
+
+                    }
+                    case "Delete" -> {
+                        String user = bfr.readLine();
+                        ArrayList<String> fileContents;
+                        boolean deleted = false;
+                        synchronized (o) {
+                            fileContents = readFile(usersFile);
+                        }
+
+                        for (int i = 0; i < fileContents.size(); i++) {
+                            if (fileContents.get(i).equals(getUserInfo(user))) {
+                                fileContents.remove(i);
+                                deleted = true;
+                            }
+                        }
+
+                        synchronized (o) {              //concurrently writes to file
+                            BufferedWriter usersWriter =
+                                    new BufferedWriter(new FileWriter(usersFile, false));
+                            for (int i = 0; i < fileContents.size(); i++) {
+                                usersWriter.write(fileContents.get(i) + "\n");
+                            }
+                            usersWriter.close();
+                        }
+
+                        if (deleted) {
+                            pw.write("Success");
+                            pw.println();
+                            pw.flush();
+                        } else {
+                            pw.write("Fail");
+                            pw.println();
+                            pw.flush();
                         }
 
                     }
@@ -553,7 +597,7 @@ public class Server implements Runnable {
         try {
             if (storesFile.exists()) {
                 BufferedWriter bfr = new BufferedWriter(new FileWriter(storesFile, true));
-                bfr.write(username + ";" + storeName + "\n");
+                bfr.write(user + ";" + storeName + "\n");
                 bfr.close();
             }
         } catch (Exception e) {
