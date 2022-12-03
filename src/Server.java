@@ -536,6 +536,113 @@ public class Server implements Runnable {
                         }
 
                     }
+                    case "Block" -> {
+                        String user = bfr.readLine();
+                        String blocked = bfr.readLine();
+                        boolean userExists = false;                 //checks if user exists
+                        boolean alreadyBlocked = false;             //check if user already blocked "blocked"
+                        ArrayList<String> usersContents;
+                        ArrayList<String> blockContents;
+
+                        synchronized (o) {
+                            usersContents = readFile(usersFile);
+                            blockContents = readFile(blockListFile);
+                        }
+
+                        for (String line : usersContents) {
+                            String[] splitLine = line.split(";");
+                            if (splitLine[1].equals(blocked)) {
+                                userExists = true;
+                                break;
+                            }
+                        }
+
+                        if (!userExists) {
+                            pw.write("No");             //tells client that this user doesn't exist
+                            pw.println();
+                            pw.flush();
+                        } else {
+                            for (String line : blockContents) {
+                                if (line.equals(user + ";blocked;" + blocked)) {
+                                    alreadyBlocked = true;
+                                }
+                            }
+
+                            if (alreadyBlocked) {
+                                pw.write("Already");         //tells client that this user is already blocked
+                                pw.println();
+                                pw.flush();
+                            }
+                        }
+
+                        if (userExists && !alreadyBlocked) {
+                            pw.write("Yes");                //Yes, user will be blocked
+                            pw.println();
+                            pw.flush();
+
+                            synchronized (o) {              //concurrently writes in file
+                                BufferedWriter blockWriter =
+                                        new BufferedWriter(new FileWriter(blockListFile, true));
+                                blockWriter.write(user + ";blocked;" + blocked + "\n");
+                                blockWriter.close();
+                            }
+                        }
+                    }
+                    case "Invisible" -> {
+
+
+                        String user = bfr.readLine();
+                        String invisibleTo = bfr.readLine();
+                        boolean userExists = false;                 //checks if user exists
+                        boolean alreadyInvisible = false;             //check if user already invisible
+                        ArrayList<String> usersContents;
+                        ArrayList<String> invisibleContents;
+
+                        synchronized (o) {
+                            usersContents = readFile(usersFile);
+                            invisibleContents = readFile(invisibleListFile);
+                        }
+
+                        for (String line : usersContents) {
+                            String[] splitLine = line.split(";");
+                            if (splitLine[1].equals(invisibleTo)) {
+                                userExists = true;
+                                break;
+                            }
+                        }
+
+                        if (!userExists) {
+                            pw.write("No");             //tells client that this user doesn't exist
+                            pw.println();
+                            pw.flush();
+                        } else {
+                            for (String line : invisibleContents) {
+                                if (line.equals(user + ";invisible to;" + invisibleTo)) {
+                                    alreadyInvisible = true;
+                                }
+                            }
+
+                            if (alreadyInvisible) {
+                                pw.write("Already");         //tells client that this user is already blocked
+                                pw.println();
+                                pw.flush();
+                            }
+                        }
+
+                        if (userExists && !alreadyInvisible) {
+                            pw.write("Yes");                //Yes, user will be blocked
+                            pw.println();
+                            pw.flush();
+
+                            synchronized (o) {              //concurrently writes in file
+                                BufferedWriter invisibleWriter =
+                                        new BufferedWriter(new FileWriter(invisibleListFile, true));
+                                invisibleWriter.write(user + ";invisible to;" + invisibleTo + "\n");
+                                invisibleWriter.close();
+                            }
+                        }
+
+                    }
                 }
             }
 

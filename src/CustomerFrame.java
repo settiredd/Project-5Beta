@@ -131,7 +131,97 @@ public class CustomerFrame extends JFrame implements Runnable {
                         }
                     }
                 } else if (e.getSource() == block) {
+                    String[] options = {"Block", "Invisible"};
+                    String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you "
+                                    + "want to block a customer or become invisible to them?",
+                            "Blocking/Invisibility", 0,
+                            JOptionPane.INFORMATION_MESSAGE, null, options, null));
 
+                    //option 0: block, option 1: invisible
+                    if (choice == null) {
+                        return;
+                    } else if (choice.isEmpty()) {
+                        return;
+                    } else if (choice.equals("0")) {
+                        String blocked = JOptionPane.showInputDialog(null, "What user do you " +
+                                "want to block?", "Block Customer", JOptionPane.QUESTION_MESSAGE);
+
+                        if (blocked == null) {
+                            return;
+                        } else if (blocked.isEmpty()) {
+                            JOptionPane.showMessageDialog(null, "You have not typed anything",
+                                    "No Input", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            pw.write("Block");          //writes command to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(username);             //writes username to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(blocked);              //writes over who client wants to block
+                            pw.println();
+                            pw.flush();
+
+                            String response = bfr.readLine();   //gets response from server
+                            switch (response) {
+                                case "No" -> {
+                                    JOptionPane.showMessageDialog(null, "This user does not" +
+                                            " exist!", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                                case "Already" -> {
+                                    JOptionPane.showMessageDialog(null, "You have already" +
+                                            " blocked this user!", "Already blocked!", JOptionPane.ERROR_MESSAGE);
+                                }
+                                case "Yes" -> {
+                                    JOptionPane.showMessageDialog(null, "You have blocked " +
+                                            blocked + "!", "Success!", JOptionPane.INFORMATION_MESSAGE);
+                                }
+                            }
+                        }
+
+                    } else if (choice.equals("1")) {
+                        String invisibleTo = JOptionPane.showInputDialog(null, "What user " +
+                                        "do you want to be invisible to?", "Invisibility mode",
+                                JOptionPane.QUESTION_MESSAGE);
+
+                        if (invisibleTo == null) {
+                            return;
+                        } else if (invisibleTo.isEmpty()) {
+                            JOptionPane.showMessageDialog(null, "You have not typed anything",
+                                    "No Input", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            pw.write("Invisible");          //writes command to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(username);             //writes username to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(invisibleTo);              //writes over who client wants to block
+                            pw.println();
+                            pw.flush();
+
+                            String response = bfr.readLine();   //gets response from server
+                            switch (response) {
+                                case "No" -> {
+                                    JOptionPane.showMessageDialog(null, "This user does not" +
+                                            " exist!", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                                case "Already" -> {
+                                    JOptionPane.showMessageDialog(null, "You are already " +
+                                                    "invisible to this user!",
+                                            "Already Invisible!", JOptionPane.ERROR_MESSAGE);
+                                }
+                                case "Yes" -> {
+                                    JOptionPane.showMessageDialog(null, "You are invisible to "
+                                            + invisibleTo + "!", "Success!", JOptionPane.INFORMATION_MESSAGE);
+                                }
+                            }
+                        }
+                    }
                 } else if (e.getSource() == convos) {
 
                 } else if (e.getSource() == dash) {
