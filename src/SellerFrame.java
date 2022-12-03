@@ -102,7 +102,7 @@ public class SellerFrame extends JFrame implements Runnable {
                 PrintWriter pw = new PrintWriter(socket.getOutputStream());
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                if (e.getSource() == store) {
+                if (e.getSource() == store) {               /** CREATE STORE **/
                     String storeName = JOptionPane.showInputDialog(null,
                             "Type in the name of your new store", "Store creation",
                             JOptionPane.QUESTION_MESSAGE);
@@ -136,7 +136,7 @@ public class SellerFrame extends JFrame implements Runnable {
                                 "Store not Created!", JOptionPane.INFORMATION_MESSAGE);
                     }
 
-                } else if (e.getSource() == message) {
+                } else if (e.getSource() == message) {          /** MESSAGING **/
                     String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Click Yes to search for customer.\nClick No to view a list of customers.",
                             "Search Prompt", JOptionPane.YES_NO_OPTION));
@@ -260,7 +260,7 @@ public class SellerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == block) {
+                } else if (e.getSource() == block) {        /** BLOCKING/INVISIBILITY **/
                     //TODO
                     String[] options = {"Block", "Invisible"};
                     String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you " +
@@ -342,7 +342,8 @@ public class SellerFrame extends JFrame implements Runnable {
                                             " exist!", "Error", JOptionPane.ERROR_MESSAGE);
                                 }
                                 case "Already" -> {
-                                    JOptionPane.showMessageDialog(null, "You are already invisible to this user!",
+                                    JOptionPane.showMessageDialog(null, "You are already " +
+                                                    "invisible to this user!",
                                             "Already Invisible!", JOptionPane.ERROR_MESSAGE);
                                 }
                                 case "Yes" -> {
@@ -352,14 +353,14 @@ public class SellerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == convos) {
+                } else if (e.getSource() == convos) {       /** VIEW CONVERSATIONS **/
                     //TODO
                     System.out.println("convos");
-                } else if (e.getSource() == dash) {
+                } else if (e.getSource() == dash) {         /** VIEW DASHBOARD **/
                     frame.dispose();
                     SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
 
-                } else if (e.getSource() == edit) {
+                } else if (e.getSource() == edit) {         /** EDIT ACCOUNT **/
                     //TODO
                     String[] editOptions = {"Username", "Password", "Email"};   //user chooses what they want to edit
                     String editSelection = selectOption("What would you like to edit", editOptions,
@@ -449,7 +450,7 @@ public class SellerFrame extends JFrame implements Runnable {
                         }
                     }
 
-                } else if (e.getSource() == delete) {
+                } else if (e.getSource() == delete) {           /** DELETE ACCOUNT **/
                     String deleteConfirm = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Are you sure you want to delete your account?",
                             "Account Deletion", JOptionPane.YES_NO_OPTION));
@@ -483,7 +484,7 @@ public class SellerFrame extends JFrame implements Runnable {
 
                     }
 
-                } else if (e.getSource() == logout) {
+                } else if (e.getSource() == logout) {       /** LOGGING OUT **/
                     frame.dispose();
                     SwingUtilities.invokeLater(new LoginFrame(socket));
                 }

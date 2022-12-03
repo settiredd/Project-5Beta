@@ -168,7 +168,7 @@ public class Server implements Runnable {
                 }
 
                 switch (cmd) {
-                    case "Login" -> {                               //user is logging in
+                    case "Login" -> {                      /** LOGGING IN **/
                         String checkUsername = bfr.readLine();
                         String checkPassword = bfr.readLine();
 
@@ -186,7 +186,7 @@ public class Server implements Runnable {
                             pw.flush();
                         }
                     }
-                    case "Create Account" -> {
+                    case "Create Account" -> {              /** CREATING ACCOUNT **/
                         /** status, username, password, email **/
                         String stat = bfr.readLine();
                         String user = bfr.readLine();
@@ -199,7 +199,7 @@ public class Server implements Runnable {
 
                         //username = user;
                     }
-                    case "MessageOptions" -> {
+                    case "MessageOptions" -> {          /** LIST OF PEOPLE TO MESSAGE **/
                         String user = bfr.readLine();           //gets username
                         String stat = bfr.readLine();           //gets username
 
@@ -261,7 +261,7 @@ public class Server implements Runnable {
 
                         }
                     }
-                    case "Search" -> {
+                    case "Search" -> {                          /** SEARCHING FOR SOMEONE TO MESSAGE **/
                         String user = bfr.readLine();
                         String search = bfr.readLine();
                         String stat = bfr.readLine();
@@ -314,7 +314,7 @@ public class Server implements Runnable {
                         }
 
                     }
-                    case "Create Store" -> {
+                    case "Create Store" -> {                    /** CREATING A STORE**/
                         String user = bfr.readLine();
                         String storeName = bfr.readLine();
                         ArrayList<String> fileContents;
@@ -348,7 +348,7 @@ public class Server implements Runnable {
                             pw.flush();
                         }
                     }
-                    case "Edit" -> {
+                    case "Edit" -> {                        /** EDITING PROFILE **/
                         String user = bfr.readLine();           //gets username
                         String itemToEdit = bfr.readLine();     //gets what the user is changing
                         String newItem = bfr.readLine();        //gets what the user wants to change it to
@@ -501,7 +501,7 @@ public class Server implements Runnable {
                         }
 
                     }
-                    case "Delete" -> {
+                    case "Delete" -> {                          /** DELETING ACCOUNT **/
                         String user = bfr.readLine();
                         ArrayList<String> fileContents;
                         boolean deleted = false;
@@ -536,7 +536,7 @@ public class Server implements Runnable {
                         }
 
                     }
-                    case "Block" -> {
+                    case "Block" -> {                              /** BLOCKING A USER **/
                         String user = bfr.readLine();
                         String blocked = bfr.readLine();
                         boolean userExists = false;                 //checks if user exists
@@ -588,9 +588,7 @@ public class Server implements Runnable {
                             }
                         }
                     }
-                    case "Invisible" -> {
-
-
+                    case "Invisible" -> {                       /** BECOMING INVISIBLE TO USER **/
                         String user = bfr.readLine();
                         String invisibleTo = bfr.readLine();
                         boolean userExists = false;                 //checks if user exists

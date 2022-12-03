@@ -95,7 +95,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                 PrintWriter pw = new PrintWriter(socket.getOutputStream());
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                if (e.getSource() == message) {
+                if (e.getSource() == message) {     /** MESSAGING **/
                     String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Click Yes to search for store.\nClick No to view a list of stores.",
                             "Search Prompt", JOptionPane.YES_NO_OPTION));
@@ -130,7 +130,7 @@ public class CustomerFrame extends JFrame implements Runnable {
 
                         }
                     }
-                } else if (e.getSource() == block) {
+                } else if (e.getSource() == block) {        /** BLOCKING/INVISIBILITY **/
                     String[] options = {"Block", "Invisible"};
                     String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you "
                                     + "want to block a customer or become invisible to them?",
@@ -222,11 +222,11 @@ public class CustomerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == convos) {
+                } else if (e.getSource() == convos) {       /** VIEW CONVERSATION **/
 
-                } else if (e.getSource() == dash) {
+                } else if (e.getSource() == dash) {         /** VIEW DASHBOARD **/
 
-                } else if (e.getSource() == edit) {
+                } else if (e.getSource() == edit) {         /** EDIT PROFILE **/
                     String[] editOptions = {"Username", "Password", "Email"};   //user chooses what they want to edit
                     String editSelection = selectOption("What would you like to edit", editOptions,
                             "Edit Account");
@@ -315,7 +315,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                         }
                     }
 
-                } else if (e.getSource() == delete) {
+                } else if (e.getSource() == delete) {           /** DELETE ACCOUNT **/
                     String deleteConfirm = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Are you sure you want to delete your account?",
                             "Account Deletion", JOptionPane.YES_NO_OPTION));
@@ -348,7 +348,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                         }
 
                     }
-                } else if (e.getSource() == logout) {
+                } else if (e.getSource() == logout) {       /** LOGGING OUT **/
                     frame.dispose();
                     SwingUtilities.invokeLater(new LoginFrame(socket));
                 }
