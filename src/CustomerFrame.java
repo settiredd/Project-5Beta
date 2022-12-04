@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.regex.Pattern;
 
 public class CustomerFrame extends JFrame implements Runnable {
@@ -95,7 +96,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                 PrintWriter pw = new PrintWriter(socket.getOutputStream());
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                if (e.getSource() == message) {     /** MESSAGING **/
+                if (e.getSource() == message) {
                     String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Click Yes to search for store.\nClick No to view a list of stores.",
                             "Search Prompt", JOptionPane.YES_NO_OPTION));
@@ -118,9 +119,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                                         "name", "No input", JOptionPane.ERROR_MESSAGE);
                             }
 
-
-                        } else if (choice.equals("1")) {            //no - view list
-                            pw.write("MessageOptions");     //writes command to server
+                            pw.write("Search");           //writes command to server
                             pw.println();
                             pw.flush();
 
@@ -128,9 +127,111 @@ public class CustomerFrame extends JFrame implements Runnable {
                             pw.println();
                             pw.flush();
 
+                            pw.write(search);           //writes over user client is searching for
+                            pw.println();
+                            pw.flush();
+
+                            pw.write("customer");           //writes over user status
+                            pw.println();
+                            pw.flush();
+
+                            String response = bfr.readLine();
+
+                            switch (response) {
+                                case "No" -> {
+                                    JOptionPane.showMessageDialog(null, "This store doesn't " +
+                                            "exist", "Not Existing", JOptionPane.ERROR_MESSAGE);
+                                }
+                                case "Blocked" -> {
+                                    JOptionPane.showMessageDialog(null, "This store seller has"
+                                                    + " blocked you/You have blocked this store seller",
+                                            "Block Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                                case "Yes" -> {
+                                    String storeSeller = bfr.readLine();        //gets store seller name
+                                    frame.dispose();
+                                    SwingUtilities.invokeLater(new ChatFrame(socket, username, "customer",
+                                            storeSeller, "seller"));
+                                }
+                            }
+                        } else if (choice.equals("1")) {            //no - view list
+                            pw.write("MessageOptions");     //writes command to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write(username);                 //writes username to server
+                            pw.println();
+                            pw.flush();
+
+                            pw.write("customer");           //writes status to customer
+                            pw.println();
+                            pw.flush();
+
+                            String serverResponse = bfr.readLine();
+
+                            switch (serverResponse) {
+                                case "None" -> {
+                                    JOptionPane.showConfirmDialog(null, "No stores to message " +
+                                            "at this time", "No stores to message", JOptionPane.PLAIN_MESSAGE);
+                                }
+                                case "Yes" -> {
+                                    ArrayList<String> stores = new ArrayList<>();
+
+                                    String line;
+                                    while ((line = bfr.readLine()) != null) {
+                                        if (!line.equals("End")) {
+                                            stores.add(line);
+                                        } else if (line.equals("End")) {
+                                            break;
+                                        }
+                                    }
+
+                                    String[] customerOptions = new String[stores.size()];
+                                    for (int i = 0; i < stores.size(); i++) {
+                                        customerOptions[i] = stores.get(i);
+                                    }
+
+                                    String storeSelection = selectOption("Who do you want to message?",
+                                            customerOptions, "Choose store");
+
+                                    if (storeSelection == null) {
+                                        return;
+                                    } else {
+                                        pw.write("Search");
+                                        pw.println();
+                                        pw.flush();
+
+                                        pw.write(username);
+                                        pw.println();
+                                        pw.flush();
+
+                                        pw.write(storeSelection);
+                                        pw.println();
+                                        pw.flush();
+
+                                        pw.write("customer");
+                                        pw.println();
+                                        pw.flush();
+
+                                        if (!bfr.readLine().equals("blocked")) {
+                                            SwingUtilities.invokeLater(new ChatFrame(socket, username,
+                                                    "customer", storeSelection, "seller"));
+                                            frame.dispose();
+                                        } else {
+                                            JOptionPane.showMessageDialog(null, "This user has" +
+                                                            " blocked you/You have blocked this user", "Block Error",
+                                                    JOptionPane.ERROR_MESSAGE);
+                                        }
+                                    }
+
+
+                                }
+                            }
+
+
                         }
                     }
-                } else if (e.getSource() == block) {        /** BLOCKING/INVISIBILITY **/
+                } else if (e.getSource() == block) {
                     String[] options = {"Block", "Invisible"};
                     String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you "
                                     + "want to block a customer or become invisible to them?",
@@ -222,11 +323,11 @@ public class CustomerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == convos) {       /** VIEW CONVERSATION **/
+                } else if (e.getSource() == convos) {
 
-                } else if (e.getSource() == dash) {         /** VIEW DASHBOARD **/
+                } else if (e.getSource() == dash) {
 
-                } else if (e.getSource() == edit) {         /** EDIT PROFILE **/
+                } else if (e.getSource() == edit) {
                     String[] editOptions = {"Username", "Password", "Email"};   //user chooses what they want to edit
                     String editSelection = selectOption("What would you like to edit", editOptions,
                             "Edit Account");
@@ -315,7 +416,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                         }
                     }
 
-                } else if (e.getSource() == delete) {           /** DELETE ACCOUNT **/
+                } else if (e.getSource() == delete) {
                     String deleteConfirm = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Are you sure you want to delete your account?",
                             "Account Deletion", JOptionPane.YES_NO_OPTION));
@@ -348,7 +449,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                         }
 
                     }
-                } else if (e.getSource() == logout) {       /** LOGGING OUT **/
+                } else if (e.getSource() == logout) {
                     frame.dispose();
                     SwingUtilities.invokeLater(new LoginFrame(socket));
                 }
