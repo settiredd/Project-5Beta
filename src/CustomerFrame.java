@@ -213,11 +213,14 @@ public class CustomerFrame extends JFrame implements Runnable {
                                         pw.println();
                                         pw.flush();
 
-                                        if (!bfr.readLine().equals("blocked")) {
+                                        String response = bfr.readLine();
+
+                                        if (response.equals("Yes")) {
+                                            String storeSeller = bfr.readLine();
                                             SwingUtilities.invokeLater(new ChatFrame(socket, username,
-                                                    "customer", storeSelection, "seller"));
+                                                    "customer", storeSeller, "seller"));
                                             frame.dispose();
-                                        } else {
+                                        } else if (response.equals("blocked")) {
                                             JOptionPane.showMessageDialog(null, "This user has" +
                                                             " blocked you/You have blocked this user", "Block Error",
                                                     JOptionPane.ERROR_MESSAGE);

@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.time.LocalDateTime;
 
 public class ChatFrame extends JFrame implements Runnable {
     Socket socket;
@@ -18,9 +19,11 @@ public class ChatFrame extends JFrame implements Runnable {
     JButton send;
     JButton edit;
     JButton delete;
-    JTextField message;
+    JTextField messageText;
     JButton sendFile;
     JButton export;
+    JButton refresh;
+    JTextArea chatBox;
 
     public ChatFrame(Socket socket, String username, String userStatus, String recipient,
                      String recipientStatus) {
@@ -33,51 +36,92 @@ public class ChatFrame extends JFrame implements Runnable {
 
     @Override
     public void run() {
-        frame = new JFrame(username + " and " + recipient);
-        frame.setSize(700, 500);
-        frame.setLayout(new BorderLayout());
-        frame.setLocationRelativeTo(null);
 
-        JTextArea chatBox = new JTextArea();
-        chatBox.setEditable(false);
-        JScrollPane scroll = new JScrollPane(chatBox, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        try {
+            PrintWriter pw = new PrintWriter(socket.getOutputStream());
+            BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-        exit = new JButton("Exit Chat");
-        exit.addActionListener(actionListener);
+            frame = new JFrame(username + " and " + recipient);
+            frame.setSize(700, 500);
+            frame.setLayout(new BorderLayout());
+            frame.setLocationRelativeTo(null);
 
-        send = new JButton("Send");
-        send.addActionListener(actionListener);
-        sendFile = new JButton("Send txt File");
-        sendFile.addActionListener(actionListener);
+            chatBox = new JTextArea();
+            chatBox.setEditable(false);
+            JScrollPane scroll = new JScrollPane(chatBox, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-        edit = new JButton("Edit Message");
-        edit.addActionListener(actionListener);
+            exit = new JButton("Exit Chat");
+            exit.addActionListener(actionListener);
 
-        delete = new JButton("Delete Message");
-        delete.addActionListener(actionListener);
+            send = new JButton("Send");
+            send.addActionListener(actionListener);
+            sendFile = new JButton("Send txt File");
+            sendFile.addActionListener(actionListener);
 
-        export = new JButton("Export conversation");
-        export.addActionListener(actionListener);
+            edit = new JButton("Edit Message");
+            edit.addActionListener(actionListener);
 
-        message = new JTextField(30);
+            delete = new JButton("Delete Message");
+            delete.addActionListener(actionListener);
 
-        JPanel bottom = new JPanel();
-        bottom.add(send);
-        bottom.add(message);
-        bottom.add(sendFile);
+            export = new JButton("Export conversation");
+            export.addActionListener(actionListener);
 
-        JPanel top = new JPanel();
-        top.add(exit);
-        top.add(edit);
-        top.add(delete);
-        top.add(export);
+            refresh = new JButton("Refresh Chat");
+            refresh.addActionListener(actionListener);
 
-        frame.add(scroll, BorderLayout.CENTER);
-        frame.add(bottom, BorderLayout.SOUTH);
-        frame.add(top, BorderLayout.NORTH);
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            messageText = new JTextField(20);
+
+            JPanel bottom = new JPanel();
+            bottom.add(send);
+            bottom.add(messageText);
+            bottom.add(sendFile);
+            bottom.add(refresh);
+
+            JPanel top = new JPanel();
+            top.add(exit);
+            top.add(edit);
+            top.add(delete);
+            top.add(export);
+
+            frame.add(scroll, BorderLayout.CENTER);
+            frame.add(bottom, BorderLayout.SOUTH);
+            frame.add(top, BorderLayout.NORTH);
+
+            frame.setVisible(true);
+            frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+
+
+            pw.write("ChatRunning");
+            pw.println();
+            pw.flush();
+
+            pw.write(username);
+            pw.println();
+            pw.flush();
+
+            pw.write(recipient);
+            pw.println();
+            pw.flush();
+
+            String addToBox = "";
+
+            String line;
+            while ((line = bfr.readLine()) != null) {
+                if (!line.equals("End")) {
+                    addToBox = addToBox + "\n" + line;
+                } else if (line.equals("End")) {
+                    break;
+                }
+            }
+
+            chatBox.setText(addToBox);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     ActionListener actionListener = new ActionListener() {
@@ -95,6 +139,66 @@ public class ChatFrame extends JFrame implements Runnable {
                         frame.dispose();
                         SwingUtilities.invokeLater(new CustomerFrame(socket, username));
                     }
+                }
+                if (e.getSource() == send) {
+                    if (messageText.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "You have not typed in a message",
+                                "No message", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        pw.write("SendMessage");        //writes command to server
+                        pw.println();
+                        pw.flush();
+
+                        pw.write(username);                 //writes the client's username
+                        pw.println();
+                        pw.flush();
+
+                        pw.write(recipient);                //writes who the client is writing to
+                        pw.println();
+                        pw.flush();
+
+                        pw.write(messageText.getText());       //writes the message client wants to send
+                        pw.println();
+                        pw.flush();
+
+                        if (bfr.readLine().equals("No")) {
+                            JOptionPane.showMessageDialog(null, "Message could not be sent",
+                                    "ERROR", JOptionPane.ERROR_MESSAGE);
+                        } else {
+                            String prevChat = chatBox.getText();
+                            prevChat = prevChat + "\n" + username + " to " + recipient + " @" +
+                                    String.valueOf(LocalDateTime.now()) + " :" + messageText.getText();
+                            chatBox.setText(prevChat);
+                            messageText.setText("");
+
+                        }
+                    }
+                }
+                if (e.getSource() == refresh) {
+                    pw.write("ChatRunning");
+                    pw.println();
+                    pw.flush();
+
+                    pw.write(username);
+                    pw.println();
+                    pw.flush();
+
+                    pw.write(recipient);
+                    pw.println();
+                    pw.flush();
+
+                    String addToBox = "";
+
+                    String line;
+                    while ((line = bfr.readLine()) != null) {
+                        if (!line.equals("End")) {
+                            addToBox = addToBox + "\n" + line;
+                        } else if (line.equals("End")) {
+                            break;
+                        }
+                    }
+
+                    chatBox.setText(addToBox);
                 }
             } catch (Exception a) {
                 JOptionPane.showMessageDialog(null, "An issue occurred (ChF)", "Error",

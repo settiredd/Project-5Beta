@@ -102,7 +102,7 @@ public class SellerFrame extends JFrame implements Runnable {
                 PrintWriter pw = new PrintWriter(socket.getOutputStream());
                 BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                if (e.getSource() == store) {               /** CREATE STORE **/
+                if (e.getSource() == store) {
                     String storeName = JOptionPane.showInputDialog(null,
                             "Type in the name of your new store", "Store creation",
                             JOptionPane.QUESTION_MESSAGE);
@@ -136,7 +136,7 @@ public class SellerFrame extends JFrame implements Runnable {
                                 "Store not Created!", JOptionPane.INFORMATION_MESSAGE);
                     }
 
-                } else if (e.getSource() == message) {          /** MESSAGING **/
+                } else if (e.getSource() == message) {
                     String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Click Yes to search for customer.\nClick No to view a list of customers.",
                             "Search Prompt", JOptionPane.YES_NO_OPTION));
@@ -171,7 +171,7 @@ public class SellerFrame extends JFrame implements Runnable {
                             pw.println();
                             pw.flush();
 
-                            pw.write("seller");
+                            pw.write("seller");         //write over user status
                             pw.println();
                             pw.flush();
 
@@ -180,7 +180,7 @@ public class SellerFrame extends JFrame implements Runnable {
                             if (response.equals("No")) {
                                 JOptionPane.showMessageDialog(null, "This user doesn't " +
                                                 "exist or this user is also a seller",
-                                        "Error", JOptionPane.ERROR_MESSAGE);
+                                        "Not Existing", JOptionPane.ERROR_MESSAGE);
                             } else if (response.equals("blocked")) {
                                 JOptionPane.showMessageDialog(null, "This user has" +
                                                 " blocked you/You have blocked this user", "Block Error",
@@ -260,7 +260,7 @@ public class SellerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == block) {        /** BLOCKING/INVISIBILITY **/
+                } else if (e.getSource() == block) {
                     //TODO
                     String[] options = {"Block", "Invisible"};
                     String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you " +
@@ -353,14 +353,14 @@ public class SellerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == convos) {       /** VIEW CONVERSATIONS **/
+                } else if (e.getSource() == convos) {
                     //TODO
                     System.out.println("convos");
-                } else if (e.getSource() == dash) {         /** VIEW DASHBOARD **/
+                } else if (e.getSource() == dash) {
                     frame.dispose();
                     SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
 
-                } else if (e.getSource() == edit) {         /** EDIT ACCOUNT **/
+                } else if (e.getSource() == edit) {
                     //TODO
                     String[] editOptions = {"Username", "Password", "Email"};   //user chooses what they want to edit
                     String editSelection = selectOption("What would you like to edit", editOptions,
@@ -450,7 +450,7 @@ public class SellerFrame extends JFrame implements Runnable {
                         }
                     }
 
-                } else if (e.getSource() == delete) {           /** DELETE ACCOUNT **/
+                } else if (e.getSource() == delete) {
                     String deleteConfirm = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Are you sure you want to delete your account?",
                             "Account Deletion", JOptionPane.YES_NO_OPTION));
@@ -484,7 +484,7 @@ public class SellerFrame extends JFrame implements Runnable {
 
                     }
 
-                } else if (e.getSource() == logout) {       /** LOGGING OUT **/
+                } else if (e.getSource() == logout) {
                     frame.dispose();
                     SwingUtilities.invokeLater(new LoginFrame(socket));
                 }

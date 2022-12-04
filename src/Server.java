@@ -3,6 +3,7 @@ import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import java.time.LocalDateTime;
 
@@ -168,7 +169,7 @@ public class Server implements Runnable {
                 }
 
                 switch (cmd) {
-                    case "Login" -> {                      /** LOGGING IN **/
+                    case "Login" -> {                               //user is logging in
                         String checkUsername = bfr.readLine();
                         String checkPassword = bfr.readLine();
 
@@ -186,7 +187,7 @@ public class Server implements Runnable {
                             pw.flush();
                         }
                     }
-                    case "Create Account" -> {              /** CREATING ACCOUNT **/
+                    case "Create Account" -> {
                         /** status, username, password, email **/
                         String stat = bfr.readLine();
                         String user = bfr.readLine();
@@ -199,7 +200,7 @@ public class Server implements Runnable {
 
                         //username = user;
                     }
-                    case "MessageOptions" -> {          /** LIST OF PEOPLE TO MESSAGE **/
+                    case "MessageOptions" -> {
                         String user = bfr.readLine();           //gets username
                         String stat = bfr.readLine();           //gets username
 
@@ -258,10 +259,52 @@ public class Server implements Runnable {
                                 }
                             }
                         } else if (stat.equals("customer")) {       //TODO
+                            ArrayList<String> storesContent;
+                            ArrayList<String> sendStores = new ArrayList<>();
+                            String storeSeller;
 
+                            synchronized (o) {
+                                storesContent = readFile(storesFile);
+                            }
+
+                            if (storesContent != null) {
+                                if (storesContent.size() > 0) {
+                                    for (String line : storesContent) {
+                                        String[] splitLine = line.split(";");
+                                        storeSeller = splitLine[0];
+
+                                        if (!isInvisible(storeSeller, user)) {
+                                            sendStores.add(splitLine[1]);
+                                        }
+                                    }
+
+                                    pw.write("Yes");        //lets client know users exist
+                                    pw.println();
+                                    pw.flush();
+
+                                    for (int i = 0; i < sendStores.size(); i++) {
+                                        pw.write(sendStores.get(i));    //sends possible recipients to client
+                                        pw.println();
+                                        pw.flush();
+                                    }
+
+                                    pw.write("End");    //lets client know that recipients list is done
+                                    pw.println();
+                                    pw.flush();
+
+                                } else {
+                                    pw.write("None");       //no users to message
+                                    pw.println();
+                                    pw.flush();
+                                }
+                            } else {
+                                pw.write("None");       //no users to message
+                                pw.println();
+                                pw.flush();
+                            }
                         }
                     }
-                    case "Search" -> {                          /** SEARCHING FOR SOMEONE TO MESSAGE **/
+                    case "Search" -> {
                         String user = bfr.readLine();
                         String search = bfr.readLine();
                         String stat = bfr.readLine();
@@ -294,6 +337,18 @@ public class Server implements Runnable {
                                                         pw.println();
                                                         pw.flush();
 
+                                                        synchronized (o) {  //checks if convo file exists else creates
+                                                            File f = new File(user + " & " + splitLine[1]);
+                                                            File f2 = new File(splitLine[1] + " & " + user);
+
+                                                            if (!f.exists()) {
+                                                                f.createNewFile();
+                                                            }
+                                                            if (!f2.exists()) {
+                                                                f2.createNewFile();
+                                                            }
+                                                        }
+
                                                         canMessage = true;
                                                     }
                                                 }
@@ -310,11 +365,80 @@ public class Server implements Runnable {
                             }
 
                         } else if (stat.equals("customer")) {
+                            ArrayList<String> fileContents;
+                            boolean storeExists = false;
+                            boolean blocked = false;
+                            boolean invisible = false;
+                            String storeSeller = "";
+
+                            synchronized (o) {
+                                fileContents = readFile(storesFile);
+                            }
+
+                            if (fileContents != null) {
+                                if (fileContents.size() > 0) {
+                                    for (String line : fileContents) {
+                                        String[] splitLine = line.split(";");
+                                        if (splitLine[1].equals(search)) {
+                                            storeSeller = splitLine[0];
+                                            storeExists = true;
+                                            if (isBlocked(storeSeller, user)) {
+                                                blocked = true;
+                                            }
+                                            if (isInvisible(storeSeller, user)) {
+                                                invisible = true;
+                                            }
+                                        }
+                                    }
+                                } else {
+                                    pw.write("No");
+                                    pw.println();
+                                    pw.flush();
+                                }
+                            } else {
+                                pw.write("No");
+                                pw.println();
+                                pw.flush();
+                            }
+
+                            if (invisible) {
+                                pw.write("No");
+                                pw.println();
+                                pw.flush();
+                            } else if (blocked) {
+                                pw.write("blocked");
+                                pw.println();
+                                pw.flush();
+                            } else if (storeExists) {
+                                pw.write("Yes");
+                                pw.println();
+                                pw.flush();
+
+                                pw.write(storeSeller);      //sends over store seller
+                                pw.println();
+                                pw.flush();
+
+                                synchronized (o) {      //checks if convo file exists else creates
+                                    File f = new File(user + " & " + storeSeller);
+                                    File f2 = new File(storeSeller + " & " + user);
+
+                                    if (!f.exists()) {
+                                        f.createNewFile();
+                                    }
+                                    if (!f2.exists()) {
+                                        f2.createNewFile();
+                                    }
+                                }
+                            } else {
+                                pw.write("No");
+                                pw.println();
+                                pw.flush();
+                            }
 
                         }
 
                     }
-                    case "Create Store" -> {                    /** CREATING A STORE**/
+                    case "Create Store" -> {
                         String user = bfr.readLine();
                         String storeName = bfr.readLine();
                         ArrayList<String> fileContents;
@@ -348,7 +472,7 @@ public class Server implements Runnable {
                             pw.flush();
                         }
                     }
-                    case "Edit" -> {                        /** EDITING PROFILE **/
+                    case "Edit" -> {
                         String user = bfr.readLine();           //gets username
                         String itemToEdit = bfr.readLine();     //gets what the user is changing
                         String newItem = bfr.readLine();        //gets what the user wants to change it to
@@ -501,7 +625,7 @@ public class Server implements Runnable {
                         }
 
                     }
-                    case "Delete" -> {                          /** DELETING ACCOUNT **/
+                    case "Delete" -> {
                         String user = bfr.readLine();
                         ArrayList<String> fileContents;
                         boolean deleted = false;
@@ -536,7 +660,7 @@ public class Server implements Runnable {
                         }
 
                     }
-                    case "Block" -> {                              /** BLOCKING A USER **/
+                    case "Block" -> {
                         String user = bfr.readLine();
                         String blocked = bfr.readLine();
                         boolean userExists = false;                 //checks if user exists
@@ -588,7 +712,9 @@ public class Server implements Runnable {
                             }
                         }
                     }
-                    case "Invisible" -> {                       /** BECOMING INVISIBLE TO USER **/
+                    case "Invisible" -> {
+
+
                         String user = bfr.readLine();
                         String invisibleTo = bfr.readLine();
                         boolean userExists = false;                 //checks if user exists
@@ -639,7 +765,49 @@ public class Server implements Runnable {
                                 invisibleWriter.close();
                             }
                         }
+                    }
+                    case "SendMessage" -> {
+                        try {
+                            String user = bfr.readLine();
+                            String messageTo = bfr.readLine();
+                            String message = bfr.readLine();
 
+                            sendMessage(user, messageTo, message);
+                            pw.write("Yes");
+                            pw.println();
+                            pw.flush();
+                        } catch (Exception e) {
+                            pw.write("No");
+                            pw.println();
+                            pw.flush();
+                        }
+                    }
+                    case "ChatRunning" -> {
+                        try {
+                            String user = bfr.readLine();
+
+                            String receiver = bfr.readLine();
+                            ArrayList<String> fileContents;
+
+                            synchronized (o) {
+                                fileContents = readFile(new File(user + " & " + receiver));
+                            }
+
+                            for (int i = 0; i < fileContents.size(); i++) {
+                                pw.write(fileContents.get(i));
+                                pw.println();
+                                pw.flush();
+                            }
+
+                            pw.write("End");
+                            pw.println();
+                            pw.flush();
+
+                        } catch (Exception e) {
+                            JOptionPane.showMessageDialog(null, "CHAT RUN ERROR", "ERROR",
+                                    JOptionPane.ERROR_MESSAGE);
+                            e.printStackTrace();
+                        }
                     }
                 }
             }
@@ -673,6 +841,25 @@ public class Server implements Runnable {
                     "Error", JOptionPane.ERROR_MESSAGE);
         }
         return userInfo;
+    }
+
+    synchronized void sendMessage(String user, String messageTo, String message) {
+        try {
+            File f = new File(user + " & " + messageTo);
+            File f2 = new File(messageTo + " & " + user);
+
+            BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
+            bw.write(user + " to " + messageTo + " @" + String.valueOf(LocalDateTime.now()) + " :" + message + "\n");
+            bw.close();
+
+            BufferedWriter bw2 = new BufferedWriter(new FileWriter(f2, true));
+            bw2.write(user + " to " + messageTo + " @" + String.valueOf(LocalDateTime.now()) + " :" + message + "\n");
+            bw2.close();
+
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "ERROR IN SENDING MESSAGE", "ERROR",
+                    JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     synchronized void writeStore(String user, String storeName) {
