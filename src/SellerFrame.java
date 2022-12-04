@@ -16,7 +16,6 @@ public class SellerFrame extends JFrame implements Runnable {
     JButton store;
     JButton message;
     JButton block;
-    JButton convos;
     JButton dash;
     JButton edit;
     JButton delete;
@@ -43,9 +42,6 @@ public class SellerFrame extends JFrame implements Runnable {
 
         block = new JButton("Block a Customer");
         block.addActionListener(actionListener);
-
-        convos = new JButton("View a Conversation");
-        convos.addActionListener(actionListener);
 
         dash = new JButton("View Dashboard");
         dash.addActionListener(actionListener);
@@ -76,18 +72,15 @@ public class SellerFrame extends JFrame implements Runnable {
         frame.add(block, gbc);
 
         gbc.gridy = 4;
-        frame.add(convos, gbc);
-
-        gbc.gridy = 5;
         frame.add(dash, gbc);
 
-        gbc.gridy = 6;
+        gbc.gridy = 5;
         frame.add(edit, gbc);
 
-        gbc.gridy = 7;
+        gbc.gridy = 6;
         frame.add(delete, gbc);
 
-        gbc.gridy = 8;
+        gbc.gridy = 7;
         frame.add(logout, gbc);
 
         frame.setVisible(true);
@@ -353,9 +346,6 @@ public class SellerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == convos) {
-                    //TODO
-                    System.out.println("convos");
                 } else if (e.getSource() == dash) {
                     frame.dispose();
                     SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));

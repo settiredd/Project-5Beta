@@ -15,7 +15,6 @@ public class CustomerFrame extends JFrame implements Runnable {
     JFrame frame;
     JButton message;
     JButton block;
-    JButton convos;
     JButton dash;
     JButton edit;
     JButton delete;
@@ -40,9 +39,6 @@ public class CustomerFrame extends JFrame implements Runnable {
 
         block = new JButton("Block a Seller");
         block.addActionListener(actionListener);
-
-        convos = new JButton("View Conversations");
-        convos.addActionListener(actionListener);
 
         dash = new JButton("View Dashboard");
         dash.addActionListener(actionListener);
@@ -70,18 +66,15 @@ public class CustomerFrame extends JFrame implements Runnable {
         frame.add(block, gbc);
 
         gbc.gridy = 3;
-        frame.add(convos, gbc);
-
-        gbc.gridy = 4;
         frame.add(dash, gbc);
 
-        gbc.gridy = 5;
+        gbc.gridy = 4;
         frame.add(edit, gbc);
 
-        gbc.gridy = 6;
+        gbc.gridy = 5;
         frame.add(delete, gbc);
 
-        gbc.gridy = 7;
+        gbc.gridy = 6;
         frame.add(logout, gbc);
 
         frame.setVisible(true);
@@ -326,8 +319,6 @@ public class CustomerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == convos) {
-
                 } else if (e.getSource() == dash) {
 
                 } else if (e.getSource() == edit) {
