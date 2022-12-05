@@ -21,6 +21,7 @@ public class SellerFrame extends JFrame implements Runnable {
     JButton delete;
     JButton logout;
 
+
     public SellerFrame(Socket socket, String username) {
         this.socket = socket;
         this.username = username;
@@ -256,8 +257,8 @@ public class SellerFrame extends JFrame implements Runnable {
                 } else if (e.getSource() == block) {
                     //TODO
                     String[] options = {"Block", "Invisible"};
-                    String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you " +
-                                    "want to block a customer or become invisible to them?",
+                    String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you "
+                                    + "want to block a customer or become invisible to them?",
                             "Blocking/Invisibility", 0,
                             JOptionPane.INFORMATION_MESSAGE, null, options, null));
 
@@ -409,6 +410,10 @@ public class SellerFrame extends JFrame implements Runnable {
                             pw.println();
                             pw.flush();
 
+                            pw.write("seller");
+                            pw.println();
+                            pw.flush();
+
                             pw.write(editSelection);        //writes over what the user wants to edit
                             pw.println();
                             pw.flush();
@@ -426,6 +431,7 @@ public class SellerFrame extends JFrame implements Runnable {
                                     if (editSelection.equals("Username")) {
                                         username = newChange;
                                     }
+                                    frame.setTitle("Hello " + username);
                                 }
                                 case "Same" -> {
                                     JOptionPane.showMessageDialog(null, "This is your current "

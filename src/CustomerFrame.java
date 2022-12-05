@@ -164,8 +164,8 @@ public class CustomerFrame extends JFrame implements Runnable {
 
                             switch (serverResponse) {
                                 case "None" -> {
-                                    JOptionPane.showConfirmDialog(null, "No stores to message " +
-                                            "at this time", "No stores to message", JOptionPane.PLAIN_MESSAGE);
+                                    JOptionPane.showConfirmDialog(null, "No stores to message "
+                                            + "at this time", "No stores to message", JOptionPane.PLAIN_MESSAGE);
                                 }
                                 case "Yes" -> {
                                     ArrayList<String> stores = new ArrayList<>();
@@ -214,9 +214,9 @@ public class CustomerFrame extends JFrame implements Runnable {
                                                     "customer", storeSeller, "seller"));
                                             frame.dispose();
                                         } else if (response.equals("blocked")) {
-                                            JOptionPane.showMessageDialog(null, "This user has" +
-                                                            " blocked you/You have blocked this user", "Block Error",
-                                                    JOptionPane.ERROR_MESSAGE);
+                                            JOptionPane.showMessageDialog(null, "This user has"
+                                                            + " blocked you/You have blocked this user",
+                                                    "Block Error", JOptionPane.ERROR_MESSAGE);
                                         }
                                     }
 
@@ -379,6 +379,10 @@ public class CustomerFrame extends JFrame implements Runnable {
                             pw.println();
                             pw.flush();
 
+                            pw.write("customer");
+                            pw.println();
+                            pw.flush();
+
                             pw.write(editSelection);        //writes over what the user wants to edit
                             pw.println();
                             pw.flush();
@@ -396,6 +400,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                                     if (editSelection.equals("Username")) {
                                         username = newChange;
                                     }
+                                    frame.setTitle("Hello " + username);
                                 }
                                 case "Same" -> {
                                     JOptionPane.showMessageDialog(null, "This is your current "

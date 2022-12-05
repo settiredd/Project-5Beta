@@ -80,8 +80,7 @@ public class Server implements Runnable {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An issue occurred (85)", "Error",
-                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
         return userExists && correctPassword; //returns true if user exists and correct password is used
     }
@@ -154,7 +153,9 @@ public class Server implements Runnable {
             if (!invisibleListFile.exists()) {      //creates invisibility file if it doesn't already exist
                 invisibleListFile.createNewFile();
             }
-
+            if (!conversationLogFile.exists()) {
+                conversationLogFile.createNewFile();
+            }
 
             PrintWriter pw = new PrintWriter(socket.getOutputStream());
             BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -333,20 +334,28 @@ public class Server implements Runnable {
 
                                                 if (splitLine[1].equals(search)) {
                                                     if (splitLine[0].equals("customer")) {
+                                                        String customerName = splitLine[1];
                                                         pw.write("Yes");      //checks if searched is a customer
                                                         pw.println();
                                                         pw.flush();
 
                                                         synchronized (o) {  //checks if convo file exists else creates
-                                                            File f = new File(user + " & " + splitLine[1]);
-                                                            File f2 = new File(splitLine[1] + " & " + user);
+                                                            File f = new File(user + " & " + customerName);
+                                                            File f2 = new File(customerName + " & " + user);
 
-                                                            if (!f.exists()) {
+                                                            if (!f.exists() && !f2.exists()) {
                                                                 f.createNewFile();
-                                                            }
-                                                            if (!f2.exists()) {
                                                                 f2.createNewFile();
+
+                                                                BufferedWriter convoLogWriter = new BufferedWriter(new
+                                                                        FileWriter(conversationLogFile, true));
+                                                                convoLogWriter.write(user + " & " + customerName
+                                                                        + "\n");
+                                                                convoLogWriter.write(customerName + " & " + user
+                                                                        + '\n');
+                                                                convoLogWriter.close();
                                                             }
+
                                                         }
 
                                                         canMessage = true;
@@ -422,11 +431,15 @@ public class Server implements Runnable {
                                     File f = new File(user + " & " + storeSeller);
                                     File f2 = new File(storeSeller + " & " + user);
 
-                                    if (!f.exists()) {
+                                    if (!f.exists() && !f2.exists()) {
                                         f.createNewFile();
-                                    }
-                                    if (!f2.exists()) {
                                         f2.createNewFile();
+
+                                        BufferedWriter convoLogWriter =
+                                                new BufferedWriter(new FileWriter(conversationLogFile, true));
+                                        convoLogWriter.write(user + " & " + storeSeller + "\n");
+                                        convoLogWriter.write(storeSeller + " & " + user + '\n');
+                                        convoLogWriter.close();
                                     }
                                 }
                             } else {
@@ -474,6 +487,7 @@ public class Server implements Runnable {
                     }
                     case "Edit" -> {
                         String user = bfr.readLine();           //gets username
+                        String stat = bfr.readLine();           //gets client status
                         String itemToEdit = bfr.readLine();     //gets what the user is changing
                         String newItem = bfr.readLine();        //gets what the user wants to change it to
                         ArrayList<String> fileContents;
@@ -520,6 +534,7 @@ public class Server implements Runnable {
                                             fileContents.add(getUserInfo(user).replace(infoSplit[1], newItem));
                                         }
                                     }
+
                                     synchronized (o) {              //concurrently writes to file
                                         BufferedWriter userWriter =
                                                 new BufferedWriter(new FileWriter(usersFile, false));
@@ -527,6 +542,80 @@ public class Server implements Runnable {
                                             userWriter.write(fileContents.get(i) + "\n");
                                         }
                                         userWriter.close();
+                                    }
+
+                                    ArrayList<String> convoListContent;
+
+                                    synchronized (o) {
+                                        convoListContent = readFile(conversationLogFile);
+                                    }
+
+                                    if (convoListContent != null) {
+                                        if (convoListContent.size() > 0) {
+                                            String line;
+                                            for (int i = 0; i < convoListContent.size(); i++) {
+                                                line = convoListContent.get(i);
+                                                String[] splitLine = line.split(" ");
+                                                String user1 = splitLine[0];
+                                                String user2 = splitLine[2];
+
+                                                if (user1.equals(userUsername) || user2.equals(userUsername)) {
+                                                    if (user1.equals(userUsername)) {
+                                                        convoListContent.set(i, newItem + " & " + user2);
+                                                        File f = new File(user1 + " & " + user2);
+                                                        f.renameTo(new File(newItem + " & " + user2));
+                                                        i = 0;
+                                                    } else if (user2.equals(userUsername)) {
+                                                        convoListContent.set(i, user1 + " & " + newItem);
+                                                        File f = new File(user1 + " & " + user2);
+                                                        f.renameTo(new File(user1 + " & " + newItem));
+                                                    }
+                                                }
+                                            }
+
+                                            synchronized (o) {
+                                                BufferedWriter convoLogWriter = new BufferedWriter
+                                                        (new FileWriter(conversationLogFile, false));
+                                                for (int i = 0; i < convoListContent.size(); i++) {
+                                                    convoLogWriter.write(convoListContent.get(i) + "\n");
+                                                }
+                                                convoLogWriter.close();
+                                            }
+                                        }
+                                    }
+
+
+                                    if (stat.equals("seller")) {
+                                        synchronized (o) {
+                                            ArrayList<String> storeList;
+                                            storeList = readFile(storesFile);
+
+                                            if (storeList != null) {
+                                                if (storeList.size() > 0) {
+                                                    String line = "";
+
+                                                    for (int i = 0; i < storeList.size(); i++) {
+                                                        line = storeList.get(i);
+                                                        String[] splitLine = line.split(";");
+                                                        String sellerName = splitLine[0];
+                                                        String storeName = splitLine[1];
+
+                                                        if (sellerName.equals(userUsername)) {
+                                                            storeList.remove(i);
+                                                            storeList.add(newItem + ";" + storeName);
+                                                            i = 0;
+                                                        }
+                                                    }
+
+                                                    BufferedWriter storeWriter = new
+                                                            BufferedWriter(new FileWriter(storesFile, false));
+                                                    for (String line2 : storeList) {
+                                                        storeWriter.write(line2 + "\n");
+                                                    }
+                                                    storeWriter.close();
+                                                }
+                                            }
+                                        }
                                     }
                                 } else if (same) {
                                     pw.write("Same");           //tells client username is same
@@ -714,7 +803,6 @@ public class Server implements Runnable {
                     }
                     case "Invisible" -> {
 
-
                         String user = bfr.readLine();
                         String invisibleTo = bfr.readLine();
                         boolean userExists = false;                 //checks if user exists
@@ -804,8 +892,6 @@ public class Server implements Runnable {
                             pw.flush();
 
                         } catch (Exception e) {
-                            JOptionPane.showMessageDialog(null, "CHAT RUN ERROR", "ERROR",
-                                    JOptionPane.ERROR_MESSAGE);
                             e.printStackTrace();
                         }
                     }
@@ -813,10 +899,7 @@ public class Server implements Runnable {
             }
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "A problem has occurred (S 143)", "Error",
-                    JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
-
         }
 
     }
@@ -837,8 +920,7 @@ public class Server implements Runnable {
                 }
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An issue occurred in getting user",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
         return userInfo;
     }
@@ -849,16 +931,17 @@ public class Server implements Runnable {
             File f2 = new File(messageTo + " & " + user);
 
             BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
-            bw.write(user + " to " + messageTo + " @" + String.valueOf(LocalDateTime.now()) + " :" + message + "\n");
+            bw.write(user + " to " + messageTo + " @" + String.valueOf(LocalDateTime.now()) + " :" + message +
+                    "\n");
             bw.close();
 
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(f2, true));
-            bw2.write(user + " to " + messageTo + " @" + String.valueOf(LocalDateTime.now()) + " :" + message + "\n");
+            bw2.write(user + " to " + messageTo + " @" + String.valueOf(LocalDateTime.now()) + " :" + message +
+                    "\n");
             bw2.close();
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "ERROR IN SENDING MESSAGE", "ERROR",
-                    JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
@@ -870,8 +953,7 @@ public class Server implements Runnable {
                 bfr.close();
             }
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "An issue occurred in writing store",
-                    "Error", JOptionPane.ERROR_MESSAGE);
+            e.printStackTrace();
         }
     }
 
@@ -885,8 +967,6 @@ public class Server implements Runnable {
             }
             bfr.close();
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, "File could not be read!", "Error",
-                    JOptionPane.ERROR_MESSAGE);
             return null;
         }
         return fileContents;
