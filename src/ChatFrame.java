@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 
 public class ChatFrame extends JFrame implements Runnable {
     Socket socket;
@@ -173,8 +174,7 @@ public class ChatFrame extends JFrame implements Runnable {
 
                         }
                     }
-                }
-                if (e.getSource() == refresh) {
+                } else if (e.getSource() == refresh) {
                     pw.write("ChatRunning");
                     pw.println();
                     pw.flush();
@@ -199,6 +199,72 @@ public class ChatFrame extends JFrame implements Runnable {
                     }
 
                     chatBox.setText(addToBox);
+                } else if (e.getSource() == delete) {
+                    pw.write("DeleteMessage");
+                    pw.println();
+                    pw.flush();
+
+                    pw.write(username);
+                    pw.println();
+                    pw.flush();
+
+                    pw.write(recipient);
+                    pw.println();
+                    pw.flush();
+
+                    String response = bfr.readLine();
+
+                    switch (response) {
+                        case "Yes" -> {
+                            ArrayList<String> messagesSent = new ArrayList<>();
+
+                            String line;
+                            while ((line = bfr.readLine()) != null) {
+                                if (!line.equals("End")) {
+                                    messagesSent.add(line);
+                                } else if (line.equals("End")) {
+                                    break;
+                                }
+                            }
+
+                            String[] messageOptions = new String[messagesSent.size()];
+                            for (int i = 0; i < messagesSent.size(); i++) {
+                                messageOptions[i] = messagesSent.get(i);
+                            }
+
+                            String userSelection = selectOption("What message do you want to delete?",
+                                    messageOptions, "Choose message");
+
+                            if (userSelection == null) {
+                                return;
+                            } else {
+                                pw.write(userSelection);
+                                pw.println();
+                                pw.flush();
+
+                                String deleteResponse = bfr.readLine();
+                                if (deleteResponse.equals("Yes")) {
+                                    JOptionPane.showMessageDialog(null, "Successfully " +
+                                                    "deleted your message. Please refresh to see updated chat",
+                                            "Success", JOptionPane.INFORMATION_MESSAGE);
+                                } else {
+                                    JOptionPane.showMessageDialog(null , "Something went " +
+                                                    "wrong in deleting your message.", "Deletion failure",
+                                            JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
+
+                        }
+                        case "NoMessages" -> {
+                            JOptionPane.showMessageDialog(null,
+                                    "No messages exist in this chat", "No messages",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                        case "SentNone" -> {
+                            JOptionPane.showMessageDialog(null, "You have not sent any " +
+                                    "messages to delete", "You sent no messages", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
                 }
             } catch (Exception a) {
                 JOptionPane.showMessageDialog(null, "An issue occurred (ChF)", "Error",
@@ -206,4 +272,15 @@ public class ChatFrame extends JFrame implements Runnable {
             }
         }
     };
+
+    public static String selectOption(String prompt, String[] options, String title) {
+        String selection;
+        try {
+            selection = (String) JOptionPane.showInputDialog(null, prompt, title,
+                    JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
+        } catch (NullPointerException e) {
+            return null;
+        }
+        return selection;
+    }
 }

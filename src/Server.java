@@ -895,6 +895,89 @@ public class Server implements Runnable {
                             e.printStackTrace();
                         }
                     }
+                    case "DeleteMessage" -> {     //only delete it for the user who initiated the delete operation.
+                        String user = bfr.readLine();
+                        String recipient = bfr.readLine();
+                        ArrayList<String> fileContents;
+                        ArrayList<String> userMessages = new ArrayList<>();
+
+                        synchronized (o) {
+                            fileContents = readFile(new File(user + " & " + recipient));
+                        }
+
+                        if (fileContents != null) {
+                            if (fileContents.size() > 0) {
+                                for (String line : fileContents) {
+                                    String[] userSplit = line.split(" ");
+                                    String sender = userSplit[0];
+                                    String receiver = userSplit[2];
+
+                                    if (sender.equals(user)) {
+                                        String[] messageSplit = line.split(":");
+                                        String message = messageSplit[3];
+                                        userMessages.add(message);
+                                    }
+                                }
+
+                                if (userMessages != null) {
+                                    if (userMessages.size() > 0) {
+                                        pw.write("Yes");
+                                        pw.println();
+                                        pw.flush();
+
+                                        for (int i = 0; i < userMessages.size(); i++) {
+                                            pw.write(userMessages.get(i));
+                                            pw.println();
+                                            pw.flush();
+                                        }
+
+                                        pw.write("End");
+                                        pw.println();
+                                        pw.flush();
+
+                                        String messageToDelete = bfr.readLine();
+                                        for (int i = 0; i < userMessages.size(); i++) {
+                                            if (userMessages.get(i).equals(messageToDelete)) {
+                                                userMessages.remove(i);
+                                                fileContents.remove(i);
+                                                break;
+                                            }
+                                        }
+
+                                        synchronized (o) {
+                                            BufferedWriter deleteWriter = new BufferedWriter(
+                                                    new FileWriter(user + " & " + recipient));
+                                            for (int j = 0; j < fileContents.size(); j++) {
+                                                deleteWriter.write(fileContents.get(j) + "\n");
+                                            }
+                                            deleteWriter.close();
+                                        }
+
+                                        pw.write("Yes");
+                                        pw.println();
+                                        pw.flush();
+
+                                    } else {
+                                        pw.write("SentNone");
+                                        pw.println();
+                                        pw.flush();
+                                    }
+                                } else {
+                                    pw.write("SentNone");
+                                    pw.println();
+                                    pw.flush();
+                                }
+                            } else {
+                                pw.write("NoMessages");
+                                pw.println();
+                                pw.flush();
+                            }
+                        } else {
+                            pw.write("NoMessages");
+                            pw.println();
+                            pw.flush();
+                        }
+                    }
                 }
             }
 

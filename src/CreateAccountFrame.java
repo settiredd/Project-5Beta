@@ -136,8 +136,8 @@ public class CreateAccountFrame extends JFrame implements Runnable {
                             username = checkUsername;
                         } else {
                             JOptionPane.showMessageDialog(null, "Create a valid username " +
-                                            "(at least 8 characters, no semicolons or spaces).", "Invalid username",
-                                    JOptionPane.ERROR_MESSAGE);
+                                            "(at least 8 characters, no semicolons or spaces).",
+                                    "Invalid username", JOptionPane.ERROR_MESSAGE);
                             userText.setText("");
                             goodUsername = false;
                         }
@@ -149,8 +149,8 @@ public class CreateAccountFrame extends JFrame implements Runnable {
                             password = checkPassword;
                         } else {
                             JOptionPane.showMessageDialog(null, "Create a valid password " +
-                                            "(at least 8 characters, no semicolons or spaces).", "Invalid password",
-                                    JOptionPane.ERROR_MESSAGE);
+                                            "(at least 8 characters, no semicolons or spaces).",
+                                    "Invalid password", JOptionPane.ERROR_MESSAGE);
                             passText.setText("");
                             goodPassword = false;
                         }
