@@ -107,29 +107,31 @@ public class SellerFrame extends JFrame implements Runnable {
                     if (storeName.isEmpty()) {         //clicks yes but has no text
                         JOptionPane.showMessageDialog(null, "Type something in",
                                 "No input", JOptionPane.ERROR_MESSAGE);
+                    } else if (storeName.contains(";")) {
+                        JOptionPane.showMessageDialog(null, "Store names cannot contain " +
+                                "semicolons", "Invalid store name", JOptionPane.ERROR_MESSAGE);
+                    } else {
+                        pw.write("Create Store");       //writes command to server
+                        pw.println();
+                        pw.flush();
+
+                        pw.write(username);       //writes username to server
+                        pw.println();
+                        pw.flush();
+
+                        pw.write(storeName);
+                        pw.println();
+                        pw.flush();
+
+                        String response = bfr.readLine();
+                        if (response.equals("Yes")) {
+                            JOptionPane.showMessageDialog(null, "Successfully created your store",
+                                    "Success!", JOptionPane.INFORMATION_MESSAGE);
+                        } else if (response.equals("No")) {
+                            JOptionPane.showMessageDialog(null, "This store name is taken",
+                                    "Store not Created!", JOptionPane.INFORMATION_MESSAGE);
+                        }
                     }
-
-                    pw.write("Create Store");       //writes command to server
-                    pw.println();
-                    pw.flush();
-
-                    pw.write(username);       //writes username to server
-                    pw.println();
-                    pw.flush();
-
-                    pw.write(storeName);
-                    pw.println();
-                    pw.flush();
-
-                    String response = bfr.readLine();
-                    if (response.equals("Yes")) {
-                        JOptionPane.showMessageDialog(null, "Successfully created your store",
-                                "Success!", JOptionPane.INFORMATION_MESSAGE);
-                    } else if (response.equals("No")) {
-                        JOptionPane.showMessageDialog(null, "This store name is taken",
-                                "Store not Created!", JOptionPane.INFORMATION_MESSAGE);
-                    }
-
                 } else if (e.getSource() == message) {
                     String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
                             "Click Yes to search for customer.\nClick No to view a list of customers.",
