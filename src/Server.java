@@ -935,28 +935,152 @@ public class Server implements Runnable {
                                         pw.println();
                                         pw.flush();
 
-                                        String messageToDelete = bfr.readLine();
-                                        for (int i = 0; i < userMessages.size(); i++) {
-                                            if (userMessages.get(i).equals(messageToDelete)) {
-                                                userMessages.remove(i);
-                                                fileContents.remove(i);
-                                                break;
+                                        String continueResponse = bfr.readLine();
+                                        if (continueResponse.equals("Continue")) {
+                                            String messageToDelete = bfr.readLine();
+                                            for (int i = 0; i < userMessages.size(); i++) {
+                                                if (userMessages.get(i).equals(messageToDelete)) {
+                                                    userMessages.remove(i);
+                                                    fileContents.remove(i);
+                                                    break;
+                                                }
                                             }
+
+                                            synchronized (o) {
+                                                BufferedWriter deleteWriter = new BufferedWriter(
+                                                        new FileWriter(user + " & " + recipient));
+                                                for (int j = 0; j < fileContents.size(); j++) {
+                                                    deleteWriter.write(fileContents.get(j) + "\n");
+                                                }
+                                                deleteWriter.close();
+                                            }
+
+                                            pw.write("Yes");
+                                            pw.println();
+                                            pw.flush();
                                         }
 
-                                        synchronized (o) {
-                                            BufferedWriter deleteWriter = new BufferedWriter(
-                                                    new FileWriter(user + " & " + recipient));
-                                            for (int j = 0; j < fileContents.size(); j++) {
-                                                deleteWriter.write(fileContents.get(j) + "\n");
-                                            }
-                                            deleteWriter.close();
-                                        }
+                                    } else {
+                                        pw.write("SentNone");
+                                        pw.println();
+                                        pw.flush();
+                                    }
+                                } else {
+                                    pw.write("SentNone");
+                                    pw.println();
+                                    pw.flush();
+                                }
+                            } else {
+                                pw.write("NoMessages");
+                                pw.println();
+                                pw.flush();
+                            }
+                        } else {
+                            pw.write("NoMessages");
+                            pw.println();
+                            pw.flush();
+                        }
+                    }
+                    case "EditMessage" -> {
+                        String user = bfr.readLine();
+                        String recipient = bfr.readLine();
+                        ArrayList<String> fileContents1;            //user to recipient fileContents
+                        ArrayList<String> fileContents2;            //recipient to user fileContents
+                        ArrayList<String> userMessages = new ArrayList<>();
 
+                        synchronized (o) {
+                            fileContents1 = readFile(new File(user + " & " + recipient));
+                        }
+                        synchronized (o) {
+                            fileContents2 = readFile(new File(recipient + " & " + user));
+                        }
+
+                        if (fileContents1 != null) {
+                            if (fileContents1.size() > 0) {
+                                for (String line : fileContents1) {
+                                    String[] userSplit = line.split(" ");
+                                    String sender = userSplit[0];
+                                    String receiver = userSplit[2];
+
+                                    if (sender.equals(user)) {
+                                        String[] messageSplit = line.split(":");
+                                        String message = messageSplit[3];
+                                        userMessages.add(message);
+                                    }
+                                }
+
+                                if (userMessages != null) {
+                                    if (userMessages.size() > 0) {
                                         pw.write("Yes");
                                         pw.println();
                                         pw.flush();
 
+                                        for (int i = 0; i < userMessages.size(); i++) {
+                                            pw.write(userMessages.get(i));
+                                            pw.println();
+                                            pw.flush();
+                                        }
+
+                                        pw.write("End");
+                                        pw.println();
+                                        pw.flush();         //same as delete until here
+
+                                        String continuePrompt = bfr.readLine();
+
+                                        if (continuePrompt.equals("Continue")) {
+                                            String messageToEdit = bfr.readLine();    //message the user wants to edit
+                                            String newMessage = bfr.readLine();     //thing that message is changed to
+
+                                            for (int i = 0; i < userMessages.size(); i++) {
+                                                if (userMessages.get(i).equals(messageToEdit)) {
+                                                    userMessages.set(i, newMessage);
+
+                                                    String messageLine = fileContents1.get(i);
+                                                    String[] splitMessage = messageLine.split(":");
+
+                                                    if (fileContents2 != null) {
+                                                        if (fileContents2.size() > 0) {
+                                                            for (int j = 0; j < fileContents2.size(); j++) {
+                                                                if (fileContents2.get(j).equals(messageLine)) {
+                                                                    fileContents2.set(j, splitMessage[0] + ":" +
+                                                                            splitMessage[1] + ":" + splitMessage[2] +
+                                                                            ":" + newMessage);
+                                                                    break;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+
+                                                    fileContents1.set(i, splitMessage[0] + ":" + splitMessage[1] + ":" +
+                                                            splitMessage[2] + ":" + newMessage);
+                                                    break;
+                                                }
+                                            }
+
+                                            synchronized (o) {
+                                                BufferedWriter editWriter = new BufferedWriter(
+                                                        new FileWriter(user + " & " + recipient,
+                                                                false));
+                                                for (int x = 0; x < fileContents1.size(); x++) {
+                                                    editWriter.write(fileContents1.get(x) + "\n");
+                                                }
+                                                editWriter.close();
+                                            }
+
+                                            synchronized (o) {
+                                                BufferedWriter file2Writer = new BufferedWriter(new
+                                                        FileWriter(recipient + " & " + user));
+                                                for (int x = 0; x < fileContents2.size(); x++) {
+                                                    file2Writer.write(fileContents2.get(x) + "\n");
+                                                }
+                                                file2Writer.close();
+                                            }
+
+                                            pw.write("Yes");
+                                            pw.println();
+                                            pw.flush();
+
+                                        }
                                     } else {
                                         pw.write("SentNone");
                                         pw.println();

@@ -174,7 +174,8 @@ public class ChatFrame extends JFrame implements Runnable {
 
                         }
                     }
-                } else if (e.getSource() == refresh) {
+                }
+                if (e.getSource() == refresh) {
                     pw.write("ChatRunning");
                     pw.println();
                     pw.flush();
@@ -199,7 +200,8 @@ public class ChatFrame extends JFrame implements Runnable {
                     }
 
                     chatBox.setText(addToBox);
-                } else if (e.getSource() == delete) {
+                }
+                if (e.getSource() == delete) {
                     pw.write("DeleteMessage");
                     pw.println();
                     pw.flush();
@@ -236,8 +238,15 @@ public class ChatFrame extends JFrame implements Runnable {
                                     messageOptions, "Choose message");
 
                             if (userSelection == null) {
+                                pw.write("Stop");
+                                pw.println();
+                                pw.flush();
                                 return;
                             } else {
+                                pw.write("Continue");
+                                pw.println();
+                                pw.flush();
+
                                 pw.write(userSelection);
                                 pw.println();
                                 pw.flush();
@@ -248,7 +257,7 @@ public class ChatFrame extends JFrame implements Runnable {
                                                     "deleted your message. Please refresh to see updated chat",
                                             "Success", JOptionPane.INFORMATION_MESSAGE);
                                 } else {
-                                    JOptionPane.showMessageDialog(null , "Something went " +
+                                    JOptionPane.showMessageDialog(null, "Something went " +
                                                     "wrong in deleting your message.", "Deletion failure",
                                             JOptionPane.ERROR_MESSAGE);
                                 }
@@ -263,6 +272,100 @@ public class ChatFrame extends JFrame implements Runnable {
                         case "SentNone" -> {
                             JOptionPane.showMessageDialog(null, "You have not sent any " +
                                     "messages to delete", "You sent no messages", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+                if (e.getSource() == edit) {
+                    pw.write("EditMessage");
+                    pw.println();
+                    pw.flush();
+
+                    pw.write(username);
+                    pw.println();
+                    pw.flush();
+
+                    pw.write(recipient);
+                    pw.println();
+                    pw.flush();
+
+                    String response = bfr.readLine();
+
+                    switch (response) {
+                        case "NoMessages" -> {
+                            JOptionPane.showMessageDialog(null,
+                                    "No messages exist in this chat", "No messages",
+                                    JOptionPane.ERROR_MESSAGE);
+                        }
+                        case "SentNone" -> {
+                            JOptionPane.showMessageDialog(null, "You have not sent any " +
+                                    "messages to delete", "You sent no messages", JOptionPane.ERROR_MESSAGE);
+                        }
+                        case "Yes" -> {
+                            ArrayList<String> messagesSent = new ArrayList<>();
+
+                            String line;
+                            while ((line = bfr.readLine()) != null) {
+                                if (!line.equals("End")) {
+                                    messagesSent.add(line);
+                                } else if (line.equals("End")) {
+                                    break;
+                                }
+                            }
+
+                            String[] messageOptions = new String[messagesSent.size()];
+                            for (int i = 0; i < messagesSent.size(); i++) {
+                                messageOptions[i] = messagesSent.get(i);
+                            }
+
+                            String userSelection = selectOption("What message do you want to edit?",
+                                    messageOptions, "Choose message");
+
+                            if (userSelection == null) {
+                                pw.write("Stop");
+                                pw.println();
+                                pw.flush();
+                                return;
+                            } else {
+                                String changedTo = JOptionPane.showInputDialog(null, "What " +
+                                                "do you want to change that message to?", "Edit Message",
+                                        JOptionPane.QUESTION_MESSAGE);
+
+                                if (changedTo == null) {
+                                    pw.write("Stop");
+                                    pw.println();
+                                    pw.flush();
+                                    return;
+                                } else if (changedTo.isEmpty()) {
+                                    pw.write("Stop");
+                                    pw.println();
+                                    pw.flush();
+                                    JOptionPane.showMessageDialog(null, "You have not typed " +
+                                            "anything", "No input", JOptionPane.ERROR_MESSAGE);
+                                } else {
+                                    pw.write("Continue");
+                                    pw.println();
+                                    pw.flush();
+                                    pw.write(userSelection);
+                                    pw.println();
+                                    pw.flush();
+
+                                    pw.write(changedTo);
+                                    pw.println();
+                                    pw.flush();
+
+                                    String editResponse = bfr.readLine();
+
+                                    if (editResponse.equals("Yes")) {
+                                        JOptionPane.showMessageDialog(null, "Successfully " +
+                                                        "deleted your message. Please refresh to see updated chat",
+                                                "Success", JOptionPane.INFORMATION_MESSAGE);
+                                    } else {
+                                        JOptionPane.showMessageDialog(null, "Something went " +
+                                                        "wrong in deleting your message.", "Deletion failure",
+                                                JOptionPane.ERROR_MESSAGE);
+                                    }
+                                }
+                            }
                         }
                     }
                 }
