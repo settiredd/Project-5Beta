@@ -106,45 +106,44 @@ public class CustomerFrame extends JFrame implements Runnable {
 
                             if (search == null) {           //cancel option
                                 return;
-                            }
-                            if (search.isEmpty()) {         //clicks yes but has no text
+                            } else if (search.isEmpty()) {         //clicks yes but has no text
                                 JOptionPane.showMessageDialog(null, "Type in a store " +
                                         "name", "No input", JOptionPane.ERROR_MESSAGE);
-                            }
+                            } else {
+                                pw.write("Search");           //writes command to server
+                                pw.println();
+                                pw.flush();
 
-                            pw.write("Search");           //writes command to server
-                            pw.println();
-                            pw.flush();
+                                pw.write(username);
+                                pw.println();
+                                pw.flush();
 
-                            pw.write(username);
-                            pw.println();
-                            pw.flush();
+                                pw.write(search);           //writes over user client is searching for
+                                pw.println();
+                                pw.flush();
 
-                            pw.write(search);           //writes over user client is searching for
-                            pw.println();
-                            pw.flush();
+                                pw.write("customer");           //writes over user status
+                                pw.println();
+                                pw.flush();
 
-                            pw.write("customer");           //writes over user status
-                            pw.println();
-                            pw.flush();
+                                String response = bfr.readLine();
 
-                            String response = bfr.readLine();
-
-                            switch (response) {
-                                case "No" -> {
-                                    JOptionPane.showMessageDialog(null, "This store doesn't " +
-                                            "exist", "Not Existing", JOptionPane.ERROR_MESSAGE);
-                                }
-                                case "Blocked" -> {
-                                    JOptionPane.showMessageDialog(null, "This store seller has"
-                                                    + " blocked you/You have blocked this store seller",
-                                            "Block Error", JOptionPane.ERROR_MESSAGE);
-                                }
-                                case "Yes" -> {
-                                    String storeSeller = bfr.readLine();        //gets store seller name
-                                    frame.dispose();
-                                    SwingUtilities.invokeLater(new ChatFrame(socket, username, "customer",
-                                            storeSeller, "seller"));
+                                switch (response) {
+                                    case "No" -> {
+                                        JOptionPane.showMessageDialog(null, "This store doesn't " +
+                                                "exist", "Not Existing", JOptionPane.ERROR_MESSAGE);
+                                    }
+                                    case "Blocked" -> {
+                                        JOptionPane.showMessageDialog(null, "This store seller has"
+                                                        + " blocked you/You have blocked this store seller",
+                                                "Block Error", JOptionPane.ERROR_MESSAGE);
+                                    }
+                                    case "Yes" -> {
+                                        String storeSeller = bfr.readLine();        //gets store seller name
+                                        frame.dispose();
+                                        SwingUtilities.invokeLater(new ChatFrame(socket, username, "customer",
+                                                storeSeller, "seller"));
+                                    }
                                 }
                             }
                         } else if (choice.equals("1")) {            //no - view list

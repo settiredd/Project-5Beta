@@ -149,42 +149,41 @@ public class SellerFrame extends JFrame implements Runnable {
 
                             if (search == null) {           //cancel option
                                 return;
-                            }
-                            if (search.isEmpty()) {         //clicks yes but has no text
+                            } else if (search.isEmpty()) {         //clicks yes but has no text
                                 JOptionPane.showMessageDialog(null, "Type in a customer " +
                                         "username", "No input", JOptionPane.ERROR_MESSAGE);
-                            }
+                            } else {
+                                pw.write("Search");           //writes command to server
+                                pw.println();
+                                pw.flush();
 
-                            pw.write("Search");           //writes command to server
-                            pw.println();
-                            pw.flush();
+                                pw.write(username);
+                                pw.println();
+                                pw.flush();
 
-                            pw.write(username);
-                            pw.println();
-                            pw.flush();
+                                pw.write(search);           //writes over user client is searching for
+                                pw.println();
+                                pw.flush();
 
-                            pw.write(search);           //writes over user client is searching for
-                            pw.println();
-                            pw.flush();
+                                pw.write("seller");         //write over user status
+                                pw.println();
+                                pw.flush();
 
-                            pw.write("seller");         //write over user status
-                            pw.println();
-                            pw.flush();
+                                String response = bfr.readLine();
 
-                            String response = bfr.readLine();
-
-                            if (response.equals("No")) {
-                                JOptionPane.showMessageDialog(null, "This user doesn't " +
-                                                "exist or this user is also a seller",
-                                        "Not Existing", JOptionPane.ERROR_MESSAGE);
-                            } else if (response.equals("blocked")) {
-                                JOptionPane.showMessageDialog(null, "This user has" +
-                                                " blocked you/You have blocked this user", "Block Error",
-                                        JOptionPane.ERROR_MESSAGE);
-                            } else if (response.equals("Yes")) {
-                                frame.dispose();
-                                SwingUtilities.invokeLater(new ChatFrame(socket, username, "seller",
-                                        search, "customer"));
+                                if (response.equals("No")) {
+                                    JOptionPane.showMessageDialog(null, "This user doesn't " +
+                                                    "exist or this user is also a seller",
+                                            "Not Existing", JOptionPane.ERROR_MESSAGE);
+                                } else if (response.equals("blocked")) {
+                                    JOptionPane.showMessageDialog(null, "This user has" +
+                                                    " blocked you/You have blocked this user", "Block Error",
+                                            JOptionPane.ERROR_MESSAGE);
+                                } else if (response.equals("Yes")) {
+                                    frame.dispose();
+                                    SwingUtilities.invokeLater(new ChatFrame(socket, username, "seller",
+                                            search, "customer"));
+                                }
                             }
 
                         } else if (choice.equals("1")) {            //no - view list
