@@ -357,11 +357,11 @@ public class ChatFrame extends JFrame implements Runnable {
 
                                     if (editResponse.equals("Yes")) {
                                         JOptionPane.showMessageDialog(null, "Successfully " +
-                                                        "edited your message. Please refresh to see updated chat",
+                                                        "edited this message. Please refresh to see updated chat",
                                                 "Success", JOptionPane.INFORMATION_MESSAGE);
                                     } else {
                                         JOptionPane.showMessageDialog(null, "Something went " +
-                                                        "wrong in editing your message.", "Edit failure",
+                                                        "wrong in editing this message.", "Edit failure",
                                                 JOptionPane.ERROR_MESSAGE);
                                     }
                                 }
