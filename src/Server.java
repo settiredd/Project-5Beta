@@ -279,19 +279,25 @@ public class Server implements Runnable {
                                         }
                                     }
 
-                                    pw.write("Yes");        //lets client know users exist
-                                    pw.println();
-                                    pw.flush();
+                                    if (sendStores.size() > 0) {
+                                        pw.write("Yes");        //lets client know users exist
+                                        pw.println();
+                                        pw.flush();
 
-                                    for (int i = 0; i < sendStores.size(); i++) {
-                                        pw.write(sendStores.get(i));    //sends possible recipients to client
+                                        for (int i = 0; i < sendStores.size(); i++) {
+                                            pw.write(sendStores.get(i));    //sends possible recipients to client
+                                            pw.println();
+                                            pw.flush();
+                                        }
+
+                                        pw.write("End");    //lets client know that recipients list is done
+                                        pw.println();
+                                        pw.flush();
+                                    } else {
+                                        pw.write("None");
                                         pw.println();
                                         pw.flush();
                                     }
-
-                                    pw.write("End");    //lets client know that recipients list is done
-                                    pw.println();
-                                    pw.flush();
 
                                 } else {
                                     pw.write("None");       //no users to message
