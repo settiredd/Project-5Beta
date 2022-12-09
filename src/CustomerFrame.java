@@ -229,7 +229,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                 } else if (e.getSource() == block) {
                     String[] options = {"Block", "Invisible"};
                     String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you "
-                                    + "want to block a customer or become invisible to them?",
+                                    + "want to block a seller or become invisible to them?",
                             "Blocking/Invisibility", 0,
                             JOptionPane.INFORMATION_MESSAGE, null, options, null));
 
@@ -240,7 +240,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                         return;
                     } else if (choice.equals("0")) {
                         String blocked = JOptionPane.showInputDialog(null, "What user do you " +
-                                "want to block?", "Block Customer", JOptionPane.QUESTION_MESSAGE);
+                                "want to block?", "Block Seller", JOptionPane.QUESTION_MESSAGE);
 
                         if (blocked == null) {
                             return;
