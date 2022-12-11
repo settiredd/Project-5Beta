@@ -411,8 +411,13 @@ public class SellerFrame extends JFrame implements Runnable {
                 }
 
                 if (e.getSource() == dashboardButton) { // TODO
-                    JOptionPane.showMessageDialog(null, "This feature has not been " +
-                            "implemented yet!", "Error", JOptionPane.ERROR_MESSAGE);
+                    writer.write("DASHBOARD");
+                    writer.println();
+                    writer.flush();
+
+                    writer.write(username);
+                    writer.println();
+                    writer.flush();
                 }
 
                 if (e.getSource() == editAccountButton) {

@@ -1,3 +1,4 @@
+import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
@@ -808,6 +809,17 @@ public class Server implements Runnable {
 
                         String result = sendMessage(username, recipient, message);
 
+                        String[] userInfoSplit = getUserInfo(username).split(";");
+                        String status = userInfoSplit[0];
+
+                        if (status.equals("customer")) {
+                            File f3 = new File(recipient + "messages.txt");
+                            BufferedWriter bw3 = new BufferedWriter(new FileWriter(f3, true));
+                            bw3.write(username + " to " + recipient + " @ " +
+                                    String.valueOf(LocalDateTime.now()) + " : " + message + "\n");
+                            bw3.close();
+                        }
+
                         writer.write(result);
                         writer.println();
                         writer.flush();
@@ -985,6 +997,10 @@ public class Server implements Runnable {
                             writer.println();
                             writer.flush();
                         }
+                    }
+                    case "DASHBOARD" -> {
+                        String username = reader.readLine();
+                        SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
                     }
                 }
             }
