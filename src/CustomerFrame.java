@@ -10,6 +10,16 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+/**
+ * EZ Messenger -- CustomerFrame
+ *
+ * Creates a frame for customer users.
+ *
+ * @author Shreeya Ettireddy, Ben Sitzman, Caden Edam, lab sec L29
+ *
+ * @version 12/11/22
+ *
+ */
 public class CustomerFrame extends JFrame implements Runnable {
     String username;
 

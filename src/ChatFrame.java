@@ -10,6 +10,16 @@ import java.net.Socket;
 import java.time.LocalDateTime;
 import java.util.Arrays;
 
+/**
+ * EZ Messenger -- ChatFrame
+ *
+ * Creates the ChatFrame where users chat in and do message options.
+ *
+ * @author Shreeya Ettireddy, Ben Sitzman, Caden Edam, lab sec L29
+ *
+ * @version 12/11/22
+ *
+ */
 public class ChatFrame extends JFrame implements Runnable {
     String username;
     String status;

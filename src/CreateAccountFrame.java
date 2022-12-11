@@ -9,6 +9,16 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.regex.Pattern;
 
+/**
+ * EZ Messenger -- CreateAccountFrame
+ *
+ * Creates a frame users to create an account.
+ *
+ * @author Shreeya Ettireddy, Ben Sitzman, Caden Edam, lab sec L29
+ *
+ * @version 12/11/22
+ *
+ */
 public class CreateAccountFrame extends JFrame implements Runnable {
     String status;
     String username;

@@ -8,6 +8,16 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+/**
+ * EZ Messenger -- LoginFrame
+ *
+ * Frame where users can choose to login or be redirected to create an account.
+ *
+ * @author Shreeya Ettireddy, Ben Sitzman, Caden Edam, lab sec L29
+ *
+ * @version 12/11/22
+ *
+ */
 public class LoginFrame extends JFrame implements Runnable {
     String username;
 

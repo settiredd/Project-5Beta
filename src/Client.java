@@ -2,6 +2,16 @@ import javax.swing.*;
 import java.io.*;
 import java.net.*;
 
+/**
+ * EZ Messenger -- Client
+ *
+ * The Client class for the program, frame execution begins here.
+ *
+ * @author Shreeya Ettireddy, Ben Sitzman, Caden Edam, lab sec L29
+ *
+ * @version 12/11/22
+ *
+ */
 public class Client {
     Socket socket;
 

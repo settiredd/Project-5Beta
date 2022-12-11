@@ -3,6 +3,16 @@ import java.net.*;
 import java.util.ArrayList;
 import java.time.LocalDateTime;
 
+/**
+ * EZ Messenger -- Server
+ *
+ * Server for the program.
+ *
+ * @author Shreeya Ettireddy, Ben Sitzman, Caden Edam, lab sec L29
+ *
+ * @version 12/11/22
+ *
+ */
 public class Server implements Runnable {
     private static final File usersFile = new File("users.txt");
     private static final File storesFile = new File("stores.txt");

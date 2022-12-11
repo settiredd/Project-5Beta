@@ -10,6 +10,16 @@ import java.net.Socket;
 import java.util.Arrays;
 import java.util.regex.Pattern;
 
+/**
+ * EZ Messenger -- SellerFrame
+ *
+ * Creates a frame for seller users.
+ *
+ * @author Shreeya Ettireddy, Ben Sitzman, Caden Edam, lab sec L29
+ *
+ * @version 12/11/22
+ *
+ */
 public class SellerFrame extends JFrame implements Runnable {
     String username;
 
