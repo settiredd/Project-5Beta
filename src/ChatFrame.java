@@ -11,7 +11,7 @@ import java.util.ArrayList;
 /**
  * EZ Messenger
  *
- * Creates the ChatFrame where users chat in
+ * Creates the ChatFrame where users chat in and do message options
  *
  * @author Shreeya Ettireddy
  *
