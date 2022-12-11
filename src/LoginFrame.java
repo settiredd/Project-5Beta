@@ -107,7 +107,7 @@ public class LoginFrame extends JFrame implements Runnable {
 
                     if (usernameEntered.isEmpty() || passwordEntered.isEmpty()) {
                         JOptionPane.showMessageDialog(null, "Please fill in the empty " +
-                                "field(s)!","Error", JOptionPane.ERROR_MESSAGE);
+                                "field(s)!", "Error", JOptionPane.ERROR_MESSAGE);
                     } else {
                         writer.write("LOGIN");
                         writer.println();

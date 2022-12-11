@@ -347,12 +347,12 @@ public class ChatFrame extends JFrame implements Runnable {
                     }
                 }
 
-                if (e.getSource() == sendFileButton) { // TODO
+                if (e.getSource() == sendFileButton) {
                     JOptionPane.showMessageDialog(null, "This feature has not been " +
                             "implemented yet!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
 
-                if (e.getSource() == exportConversationButton) { // TODO
+                if (e.getSource() == exportConversationButton) {
                     JOptionPane.showMessageDialog(null, "This feature has not been " +
                             "implemented yet!", "Error", JOptionPane.ERROR_MESSAGE);
                 }

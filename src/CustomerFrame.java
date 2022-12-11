@@ -293,7 +293,8 @@ public class CustomerFrame extends JFrame implements Runnable {
                                         }
                                         default -> {
                                             JOptionPane.showMessageDialog(null, "You have " +
-                                                            "successfully " + serverResponse + " " + userToBlock + "!",
+                                                            "successfully " + serverResponse +
+                                                            " " + userToBlock + "!",
                                                     "Success", JOptionPane.INFORMATION_MESSAGE);
                                         }
                                     }
@@ -352,7 +353,7 @@ public class CustomerFrame extends JFrame implements Runnable {
                     }
                 }
 
-                if (e.getSource() == dashboardButton) { // TODO
+                if (e.getSource() == dashboardButton) {
                     JOptionPane.showMessageDialog(null, "This feature has not been " +
                             "implemented yet!", "Error", JOptionPane.ERROR_MESSAGE);
                 }
