@@ -351,7 +351,8 @@ public class SellerFrame extends JFrame implements Runnable {
                                         }
                                         default -> {
                                             JOptionPane.showMessageDialog(null, "You have " +
-                                                            "successfully " + serverResponse + " " + userToBlock + "!",
+                                                            "successfully " + serverResponse + " "
+                                                            + userToBlock + "!",
                                                     "Success", JOptionPane.INFORMATION_MESSAGE);
                                         }
                                     }
@@ -410,7 +411,7 @@ public class SellerFrame extends JFrame implements Runnable {
                     }
                 }
 
-                if (e.getSource() == dashboardButton) { // TODO
+                if (e.getSource() == dashboardButton) {
                     sellerFrame.dispose();
                     SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
                 }
@@ -482,7 +483,8 @@ public class SellerFrame extends JFrame implements Runnable {
                                 }
                                 case "NO CHANGE" -> {
                                     JOptionPane.showMessageDialog(null, "The " +
-                                                    editSelection.toLowerCase() + " you entered is the same as your " +
+                                                    editSelection.toLowerCase() + " you entered is the " +
+                                                    "same as your " +
                                                     "current " + editSelection.toLowerCase() + "!", "Error",
                                             JOptionPane.ERROR_MESSAGE);
                                 }
