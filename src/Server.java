@@ -1001,10 +1001,6 @@ public class Server implements Runnable {
                             writer.flush();
                         }
                     }
-                    case "DASHBOARD" -> {
-                        String username = reader.readLine();
-                        SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
-                    }
                 }
             }
         } catch (IOException e) {

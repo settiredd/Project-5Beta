@@ -411,13 +411,8 @@ public class SellerFrame extends JFrame implements Runnable {
                 }
 
                 if (e.getSource() == dashboardButton) { // TODO
-                    writer.write("DASHBOARD");
-                    writer.println();
-                    writer.flush();
-
-                    writer.write(username);
-                    writer.println();
-                    writer.flush();
+                    sellerFrame.dispose();
+                    SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
                 }
 
                 if (e.getSource() == editAccountButton) {
