@@ -3,239 +3,239 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.regex.Pattern;
 
-/**
- * EZ Messenger
- *
- * Creates a frame users to create an account
- *
- * @author Shreeya Ettireddy
- *
- * @version 12/11/22
- *
- */
-
 public class CreateAccountFrame extends JFrame implements Runnable {
-    Socket socket;
+    String status;
     String username;
     String password;
-    String status;
     String email;
-    JTextField userText;
-    JPasswordField passText;
-    JTextField emailText;
-    JRadioButton seller;
-    JRadioButton customer;
-    JButton create;
-    JFrame frame;
+
+    JFrame createAccountFrame;
+    JTextField usernameTextField;
+    JPasswordField passwordTextField;
+    JTextField emailTextField;
+    JRadioButton sellerButton;
+    JRadioButton customerButton;
+    JButton createAccountButton;
+
+    Socket socket;
 
     public CreateAccountFrame(Socket socket) {
         this.socket = socket;
     }
 
     public void run() {
-        frame = new JFrame("Create Account");
-        frame.setSize(400, 300);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new GridBagLayout());
+        createAccountFrame = new JFrame("Create Account");
+        createAccountFrame.setSize(400, 300);
+        createAccountFrame.setLocationRelativeTo(null);
+        createAccountFrame.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
         JLabel statusLabel = new JLabel("What is your status?");
-        seller = new JRadioButton("Seller");
-        customer = new JRadioButton("Customer");
+        customerButton = new JRadioButton("Customer");
+        sellerButton = new JRadioButton("Seller");
 
         ButtonGroup group = new ButtonGroup();
-        group.add(seller);
-        group.add(customer);
+        group.add(customerButton);
+        group.add(sellerButton);
 
-        JLabel userLabel = new JLabel("Username:");
-        userText = new JTextField(10);
+        JLabel usernameLabel = new JLabel("Username:");
+        usernameTextField = new JTextField(10);
 
-        JLabel passLabel = new JLabel("Password:");
-        passText = new JPasswordField(10);
+        JLabel passwordLabel = new JLabel("Password:");
+        passwordTextField = new JPasswordField(10);
 
         JLabel emailLabel = new JLabel("Email:");
-        emailText = new JTextField(15);
+        emailTextField = new JTextField(15);
 
-        create = new JButton("Create Account");
-        create.addActionListener(actionListener);
+        createAccountButton = new JButton("Create account");
+        createAccountButton.addActionListener(actionListener);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
-        frame.add(statusLabel, gbc);
+        createAccountFrame.add(statusLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 0;
-        frame.add(customer, gbc);
+        createAccountFrame.add(customerButton, gbc);
 
         gbc.gridx = 2;
         gbc.gridy = 0;
-        frame.add(seller, gbc);
+        createAccountFrame.add(sellerButton, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 1;
-        frame.add(userLabel, gbc);
+        createAccountFrame.add(usernameLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 1;
-        frame.add(userText, gbc);
+        createAccountFrame.add(usernameTextField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 2;
-        frame.add(passLabel, gbc);
+        createAccountFrame.add(passwordLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 2;
-        frame.add(passText, gbc);
+        createAccountFrame.add(passwordTextField, gbc);
 
         gbc.gridx = 0;
         gbc.gridy = 3;
-        frame.add(emailLabel, gbc);
+        createAccountFrame.add(emailLabel, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 3;
-        frame.add(emailText, gbc);
+        createAccountFrame.add(emailTextField, gbc);
 
         gbc.gridx = 1;
         gbc.gridy = 4;
-        frame.add(create, gbc);
+        createAccountFrame.add(createAccountButton, gbc);
 
-        frame.setVisible(true);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        createAccountFrame.setVisible(true);
+        createAccountFrame.setResizable(false);
+        createAccountFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     ActionListener actionListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
-            if (e.getSource() == create) {
+            if (e.getSource() == createAccountButton) {
                 try {
-                    PrintWriter pw = new PrintWriter(socket.getOutputStream());
-                    BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
-                    String checkUsername = userText.getText();
-                    String checkPassword = passText.getText();
-                    String checkEmail = emailText.getText();
+                    String serverResponse;
 
-                    if (checkUsername.isEmpty() || checkPassword.isEmpty() || checkEmail.isEmpty()) {
-                        JOptionPane.showMessageDialog(null, "Please fill in the empty field!",
-                                "Login Error", JOptionPane.ERROR_MESSAGE);
-                    } else if (!seller.isSelected() && !customer.isSelected()) {       //makes sure user selects status
-                        JOptionPane.showMessageDialog(null, "Select your status!",
-                                "Login Error", JOptionPane.ERROR_MESSAGE);
+                    String usernameEntered = usernameTextField.getText();
+                    String passwordEntered = passwordTextField.getText();
+                    String emailEntered = emailTextField.getText();
+
+                    if (usernameEntered.isEmpty() || passwordEntered.isEmpty() || emailEntered.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Please fill in the empty " +
+                                "field(s)!", "Error", JOptionPane.ERROR_MESSAGE);
+                    } else if (!sellerButton.isSelected() && !customerButton.isSelected()) {
+                        JOptionPane.showMessageDialog(null, "Please select a status!",
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        boolean goodUsername;
-                        boolean goodPassword;
-                        boolean goodEmail;
-
-                        if (seller.isSelected()) {          //assigns status
+                        if (sellerButton.isSelected()) {
                             status = "seller";
-                        } else if (customer.isSelected()) {
+                        } else if (customerButton.isSelected()) {
                             status = "customer";
                         }
 
-                        /** check username before sending to server **/
-                        if (checkUsername.length() >= 8 && !checkUsername.contains(" ")
-                                && !checkUsername.contains(";")) {
-                            goodUsername = true;
-                            username = checkUsername;
+                        boolean validUsername = false;
+
+                        if (usernameEntered.length() >= 8 && !usernameEntered.contains(" ") &&
+                                !usernameEntered.contains(";") && !usernameEntered.contains("."))  {
+                            validUsername = true;
+                            username = usernameEntered;
                         } else {
-                            JOptionPane.showMessageDialog(null, "Create a valid username " +
-                                            "(at least 8 characters, no semicolons or spaces).", "Invalid username",
-                                    JOptionPane.ERROR_MESSAGE);
-                            userText.setText("");
-                            goodUsername = false;
+                            JOptionPane.showMessageDialog(null, "Please enter a valid " +
+                                            "username (at least 8 characters, no semicolons, periods, or spaces)!",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            usernameTextField.setText("");
                         }
 
-                        /** check password before sending to server **/
-                        if (checkPassword.length() >= 8 && !checkPassword.contains(" ")
-                                && !checkPassword.contains(";")) {
-                            goodPassword = true;
-                            password = checkPassword;
+                        boolean validPassword = false;
+
+                        if (passwordEntered.length() >= 8 && !passwordEntered.contains(" ")
+                                && !passwordEntered.contains(";") && !passwordEntered.contains("."))  {
+                            validPassword = true;
+                            password = passwordEntered;
                         } else {
-                            JOptionPane.showMessageDialog(null, "Create a valid password " +
-                                            "(at least 8 characters, no semicolons or spaces).", "Invalid password",
-                                    JOptionPane.ERROR_MESSAGE);
-                            passText.setText("");
-                            goodPassword = false;
+                            JOptionPane.showMessageDialog(null, "Please enter a valid " +
+                                            "password (at least 8 characters, no semicolons, periods, or spaces)!",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            passwordTextField.setText("");
                         }
 
-                        /** check email before sending to server **/
                         String emailRegex = "^[a-zA-Z0-9_+&*-]+" +
                                 "(?:\\.[a-zA-Z0-9_+&*-]+)*@" +
                                 "(?:[a-zA-Z0-9-]+\\.)+" +
                                 "[a-zA-Z]{2,7}$";
                         Pattern checkValidity = Pattern.compile(emailRegex);
-                        if (checkValidity.matcher(checkEmail).matches()) {
-                            goodEmail = true;
-                            email = checkEmail;
+
+                        boolean validEmail = false;
+
+                        if (checkValidity.matcher(emailEntered).matches()) {
+                            validEmail = true;
+                            email = emailEntered;
                         } else {
-                            JOptionPane.showMessageDialog(null, "Enter a valid email",
-                                    "Invalid email", JOptionPane.ERROR_MESSAGE);
-                            emailText.setText("");
-                            goodEmail = false;
+                            JOptionPane.showMessageDialog(null, "Please enter a valid email!",
+                                    "Error", JOptionPane.ERROR_MESSAGE);
+                            emailTextField.setText("");
                         }
 
-                        if (goodUsername && goodPassword && goodEmail) {
-                            pw.write("Create Account");         //writes command to server
-                            pw.println();
-                            pw.flush();
+                        if (validUsername && validPassword && validEmail) {
+                            writer.write("CREATE ACCOUNT");
+                            writer.println();
+                            writer.flush();
 
-                            pw.write(status);         //writes status to server
-                            pw.println();
-                            pw.flush();
+                            writer.write(status);
+                            writer.println();
+                            writer.flush();
 
-                            pw.write(username);         //writes username to server
-                            pw.println();
-                            pw.flush();
+                            writer.write(username);
+                            writer.println();
+                            writer.flush();
 
-                            pw.write(password);         //writes password to server
-                            pw.println();
-                            pw.flush();
+                            writer.write(password);
+                            writer.println();
+                            writer.flush();
 
-                            pw.write(email);         //writes email to server
-                            pw.println();
-                            pw.flush();
+                            writer.write(email);
+                            writer.println();
+                            writer.flush();
 
-                            String result = bfr.readLine();
+                            serverResponse = reader.readLine();
+                            switch (serverResponse) {
+                                case "ACCOUNT CREATION SUCCESSFUL" -> {
+                                    JOptionPane.showMessageDialog(null, "Account created " +
+                                            "successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
 
-                            if (result.equals("Yes")) {
-                                JOptionPane.showMessageDialog(null, "Account Created",
-                                        "Success!", JOptionPane.PLAIN_MESSAGE);
-                                //pw.close();
-                                //bfr.close();
-                                //socket.close();
-                                frame.dispose();
+                                    createAccountFrame.dispose();
 
-                                if (status.equals("seller")) {
-                                    SwingUtilities.invokeLater(new SellerFrame(socket, username));
-                                } else if (status.equals("customer")) {
-                                    SwingUtilities.invokeLater(new CustomerFrame(socket, username));
+                                    if (status.equals("customer")) {
+                                        SwingUtilities.invokeLater(new CustomerFrame(socket, username));
+                                    } else if (status.equals("seller")) {
+                                        SwingUtilities.invokeLater(new SellerFrame(socket, username));
+                                    }
                                 }
-                            } else if (result.equals("No-Username")) {
-                                JOptionPane.showMessageDialog(null, "This username is being" +
-                                        " used!", "Creation Error", JOptionPane.ERROR_MESSAGE);
-                                userText.setText("");
-                            } else if (result.equals("No-Email")) {
-                                JOptionPane.showMessageDialog(null, "This email is being" +
-                                        " used!", "Creation Error", JOptionPane.ERROR_MESSAGE);
-                                emailText.setText("");
-                            } else {
-                                JOptionPane.showMessageDialog(null, "There was an error" +
-                                        " creating this account!", "Creation Error", JOptionPane.ERROR_MESSAGE);
+                                case "USERNAME TAKEN" -> {
+                                    JOptionPane.showMessageDialog(null, "The username you " +
+                                            "entered is taken!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    usernameTextField.setText("");
+                                }
+                                case "EMAIL TAKEN" -> {
+                                    JOptionPane.showMessageDialog(null, "The email you " +
+                                            "entered is already being used!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    emailTextField.setText("");
+                                }
+                                case "BOTH TAKEN" -> {
+                                    JOptionPane.showMessageDialog(null, "The username and " +
+                                                    "email you entered are both taken!", "Error",
+                                            JOptionPane.ERROR_MESSAGE);
+                                    usernameTextField.setText("");
+                                    emailTextField.setText("");
+                                }
+                                case "FILE ERROR" -> {
+                                    JOptionPane.showMessageDialog(null, "There was an error " +
+                                            "reading a file!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    usernameTextField.setText("");
+                                    emailTextField.setText("");
+                                }
                             }
                         }
                     }
-                } catch (Exception a) {
-                    //handles any error we may have missed
-                    JOptionPane.showMessageDialog(null, "An issue has occurred (CAF 124)",
-                            "Error",
+                } catch (IOException ioException) {
+                    JOptionPane.showMessageDialog(null, "Connection lost!", "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }

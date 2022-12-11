@@ -3,29 +3,20 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-/**
- * EZ Messenger
- *
- * Frame where users can choose to login or be redirected to create an account
- *
- * @author Shreeya Ettireddy
- *
- * @version 12/11/22
- *
- */
-
 public class LoginFrame extends JFrame implements Runnable {
-    Socket socket;
     String username;
-    String password;
+
+    JFrame loginFrame;
+    JTextField usernameTextField;
+    JPasswordField passwordTextField;
     JButton loginButton;
-    JTextField usernameText;
-    JPasswordField passwordText;
-    JFrame frame;
+
+    Socket socket;
 
     public LoginFrame(Socket socket) {
         this.socket = socket;
@@ -34,53 +25,60 @@ public class LoginFrame extends JFrame implements Runnable {
     public void run() {
         String[] loginOptions = new String[]{"Login", "Create account", "Quit"};
         String loginSelection = selectOption("What would you like to do?", loginOptions);
-        if (loginSelection == null || loginSelection.equals("Quit")) {
-            JOptionPane.showMessageDialog(null, "See you next time!", "Farewell",
-                    JOptionPane.INFORMATION_MESSAGE);
-        } else if (loginSelection.equals("Create account")) {
-            SwingUtilities.invokeLater(new CreateAccountFrame(socket));
-        } else if (loginSelection.equals("Login")) {
-            frame = new JFrame("Login");
-            frame.setSize(275, 200);
-            frame.setLocationRelativeTo(null);
-            frame.setLayout(new GridBagLayout());
-            GridBagConstraints gbc = new GridBagConstraints();
 
-            usernameText = new JTextField(15);
-            passwordText = new JPasswordField(15);
-            JLabel user = new JLabel("Username:");
-            JLabel pass = new JLabel("Password:");
+        if (loginSelection != null) {
+            switch (loginSelection) {
+                case "Login" -> {
+                    loginFrame = new JFrame("Login");
+                    loginFrame.setSize(275, 200);
+                    loginFrame.setLocationRelativeTo(null);
+                    loginFrame.setLayout(new GridBagLayout());
+                    GridBagConstraints gbc = new GridBagConstraints();
 
-            loginButton = new JButton("Login");
-            loginButton.addActionListener(actionListener);
+                    usernameTextField = new JTextField(15);
+                    passwordTextField = new JPasswordField(15);
+                    JLabel usernameLabel = new JLabel("Username:");
+                    JLabel passwordLabel = new JLabel("Password:");
 
-            gbc.gridx = 0;
-            gbc.gridy = 0;
-            gbc.gridwidth = 1;
-            gbc.gridheight = 1;
-            frame.add(user, gbc);
+                    loginButton = new JButton("Login");
+                    loginButton.addActionListener(actionListener);
 
-            gbc.gridx = 1;
-            gbc.gridwidth = 5;
-            gbc.weightx = 1;
-            frame.add(usernameText, gbc);
+                    gbc.gridx = 0;
+                    gbc.gridy = 0;
+                    gbc.gridwidth = 1;
+                    gbc.gridheight = 1;
+                    loginFrame.add(usernameLabel, gbc);
 
-            gbc.gridy = 1;
-            gbc.gridx = 0;
-            gbc.gridwidth = 1;
-            frame.add(pass, gbc);
+                    gbc.gridx = 1;
+                    gbc.gridwidth = 5;
+                    gbc.weightx = 1;
+                    loginFrame.add(usernameTextField, gbc);
 
-            gbc.gridx = 1;
-            gbc.gridwidth = 5;
-            frame.add(passwordText, gbc);
+                    gbc.gridy = 1;
+                    gbc.gridx = 0;
+                    gbc.gridwidth = 1;
+                    loginFrame.add(passwordLabel, gbc);
 
-            gbc.gridx = 2;
-            gbc.gridy = 6;
-            frame.add(loginButton, gbc);
+                    gbc.gridx = 1;
+                    gbc.gridwidth = 5;
+                    loginFrame.add(passwordTextField, gbc);
 
-            frame.setVisible(true);
-            frame.setResizable(false);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    gbc.gridx = 2;
+                    gbc.gridy = 6;
+                    loginFrame.add(loginButton, gbc);
+
+                    loginFrame.setVisible(true);
+                    loginFrame.setResizable(false);
+                    loginFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                }
+                case "Create account" -> {
+                    SwingUtilities.invokeLater(new CreateAccountFrame(socket));
+                }
+                case "Quit" -> {
+                    JOptionPane.showMessageDialog(null, "See you next time!", "Farewell",
+                            JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
         }
     }
 
@@ -89,58 +87,60 @@ public class LoginFrame extends JFrame implements Runnable {
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == loginButton) {
                 try {
-                    PrintWriter pw = new PrintWriter(socket.getOutputStream());
-                    BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
-                    String checkUsername = usernameText.getText();
-                    String checkPassword = passwordText.getText();
+                    String serverResponse;
 
-                    if (checkUsername.isEmpty() || checkPassword.isEmpty()) {
-                        JOptionPane.showMessageDialog(null, "Please fill in the empty field!",
-                                "Login Error", JOptionPane.ERROR_MESSAGE);
+                    String usernameEntered = usernameTextField.getText();
+                    String passwordEntered = passwordTextField.getText();
+
+                    if (usernameEntered.isEmpty() || passwordEntered.isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Please fill in the empty " +
+                                "field(s)!","Error", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        username = checkUsername;
-                        password = checkPassword;
+                        writer.write("LOGIN");
+                        writer.println();
+                        writer.flush();
 
-                        pw.write("Login");          //Writes Login command
-                        pw.println();
-                        pw.flush();
+                        writer.write(usernameEntered);
+                        writer.println();
+                        writer.flush();
 
-                        pw.write(username);             //writes over the username
-                        pw.println();
-                        pw.flush();
+                        writer.write(passwordEntered);
+                        writer.println();
+                        writer.flush();
 
-                        pw.write(password);             //writes over the password
-                        pw.println();
-                        pw.flush();
+                        serverResponse = reader.readLine();
+                        switch (serverResponse) {
+                            case "LOGIN SUCCESSFUL" -> {
+                                loginFrame.dispose();
 
-                        String checkLogin = bfr.readLine();
-                        if (checkLogin.equals("Yes")) {     //login success
-                            String status = bfr.readLine();
+                                username = usernameEntered;
 
-                            if (status.equals("seller")) {      //opens seller specific frame
-                                SwingUtilities.invokeLater(new SellerFrame(socket, username));
-                            } else if (status.equals("customer")) {     //opens customer specific frame
-                                SwingUtilities.invokeLater(new CustomerFrame(socket, username));
-                            } else {
-                                JOptionPane.showMessageDialog(null, "Status could not be " +
-                                        "found (LF 107)", "Unknown Status", JOptionPane.ERROR_MESSAGE);
+                                String status = reader.readLine();
+                                if (status.equals("customer")) {
+                                    SwingUtilities.invokeLater(new CustomerFrame(socket, username));
+                                } else if (status.equals("seller")) {
+                                    SwingUtilities.invokeLater(new SellerFrame(socket, username));
+                                }
                             }
-
-                            frame.dispose();
-
-                        } else if (checkLogin.equals("No")) {   //login failure
-                            JOptionPane.showMessageDialog(null, "Please check username and " +
-                                            "password", "Unable to login",
-                                    JOptionPane.ERROR_MESSAGE);
-                            usernameText.setText("");
-                            passwordText.setText("");
+                            case "LOGIN UNSUCCESSFUL" -> {
+                                JOptionPane.showMessageDialog(null, "The username or " +
+                                        "password you entered is incorrect!", "Error", JOptionPane.ERROR_MESSAGE);
+                                usernameTextField.setText("");
+                                passwordTextField.setText("");
+                            }
+                            case "FILE ERROR" -> {
+                                JOptionPane.showMessageDialog(null, "There was an error " +
+                                        "reading a file!", "Error", JOptionPane.ERROR_MESSAGE);
+                                usernameTextField.setText("");
+                                passwordTextField.setText("");
+                            }
                         }
                     }
-                } catch (Exception a) {
-                    //handles any error we may have missed
-                    JOptionPane.showMessageDialog(null, "An issue has occurred (LF 116)",
-                            "Error",
+                } catch (IOException ioException) {
+                    JOptionPane.showMessageDialog(null, "Connection lost!", "Error",
                             JOptionPane.ERROR_MESSAGE);
                 }
             }
@@ -150,8 +150,7 @@ public class LoginFrame extends JFrame implements Runnable {
     public static String selectOption(String prompt, String[] options) {
         String selection;
         try {
-            selection = (String) JOptionPane.showInputDialog(null, prompt,
-                    "Welcome to EZ Messenger!",
+            selection = (String) JOptionPane.showInputDialog(null, prompt, "Options",
                     JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         } catch (NullPointerException e) {
             return null;

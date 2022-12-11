@@ -3,387 +3,364 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
-
-/**
- * EZ Messenger
- *
- * Creates the ChatFrame where users chat in and do message options
- *
- * @author Shreeya Ettireddy
- *
- * @version 12/11/22
- *
- */
+import java.time.LocalDateTime;
+import java.util.Arrays;
 
 public class ChatFrame extends JFrame implements Runnable {
-    Socket socket;
     String username;
-    String userStatus;
+    String status;
     String recipient;
-    String recipientStatus;
-    JFrame frame;
-    JButton exit;
-    JButton send;
-    JButton edit;
-    JButton delete;
-    JTextField messageText;
-    JButton refresh;
+
+    JFrame chatFrame;
+    JButton exitButton;
+    JButton sendMessageButton;
+    JButton editMessageButton;
+    JButton deleteMessageButton;
+    JButton sendFileButton;
+    JButton exportConversationButton;
+    JButton refreshChatButton;
+    JTextField messageTextField;
     JTextArea chatBox;
 
-    public ChatFrame(Socket socket, String username, String userStatus, String recipient,
-                     String recipientStatus) {
+    Socket socket;
+
+    public ChatFrame(Socket socket, String username, String status, String recipient) {
         this.socket = socket;
         this.username = username;
-        this.userStatus = userStatus;
+        this.status = status;
         this.recipient = recipient;
-        this.recipientStatus = recipientStatus;
     }
 
     @Override
     public void run() {
-
         try {
-            PrintWriter pw = new PrintWriter(socket.getOutputStream());
-            BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
-            frame = new JFrame(username + " and " + recipient);
-            frame.setSize(700, 500);
-            frame.setLayout(new BorderLayout());
-            frame.setLocationRelativeTo(null);
+            chatFrame = new JFrame(username + " & " + recipient);
+            chatFrame.setSize(700, 500);
+            chatFrame.setLayout(new BorderLayout());
+            chatFrame.setLocationRelativeTo(null);
 
             chatBox = new JTextArea();
             chatBox.setEditable(false);
             JScrollPane scroll = new JScrollPane(chatBox, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
 
-            exit = new JButton("Exit Chat");
-            exit.addActionListener(actionListener);
+            exitButton = new JButton("Exit chat");
+            exitButton.addActionListener(actionListener);
 
-            send = new JButton("Send");
-            send.addActionListener(actionListener);
+            sendMessageButton = new JButton("Send");
+            sendMessageButton.addActionListener(actionListener);
 
-            edit = new JButton("Edit Message");
-            edit.addActionListener(actionListener);
+            sendFileButton = new JButton("Send .txt file");
+            sendFileButton.addActionListener(actionListener);
 
-            delete = new JButton("Delete Message");
-            delete.addActionListener(actionListener);
+            editMessageButton = new JButton("Edit message");
+            editMessageButton.addActionListener(actionListener);
 
-            refresh = new JButton("Refresh Chat");
-            refresh.addActionListener(actionListener);
+            deleteMessageButton = new JButton("Delete message");
+            deleteMessageButton.addActionListener(actionListener);
 
-            messageText = new JTextField( 20);
+            exportConversationButton = new JButton("Export conversation");
+            exportConversationButton.addActionListener(actionListener);
+
+            refreshChatButton = new JButton("Refresh chat");
+            refreshChatButton.addActionListener(actionListener);
+
+            messageTextField = new JTextField(20);
 
             JPanel bottom = new JPanel();
-            bottom.add(send);
-            bottom.add(messageText);
-            bottom.add(refresh);
+            bottom.add(sendMessageButton);
+            bottom.add(messageTextField);
+            bottom.add(sendFileButton);
+            bottom.add(refreshChatButton);
 
             JPanel top = new JPanel();
-            top.add(exit);
-            top.add(edit);
-            top.add(delete);
+            top.add(exitButton);
+            top.add(editMessageButton);
+            top.add(deleteMessageButton);
+            top.add(exportConversationButton);
 
-            frame.add(scroll, BorderLayout.CENTER);
-            frame.add(bottom, BorderLayout.SOUTH);
-            frame.add(top, BorderLayout.NORTH);
+            chatFrame.add(scroll, BorderLayout.CENTER);
+            chatFrame.add(bottom, BorderLayout.SOUTH);
+            chatFrame.add(top, BorderLayout.NORTH);
 
-            frame.setVisible(true);
-            frame.setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+            chatFrame.setVisible(true);
+            chatFrame.setDefaultCloseOperation(EXIT_ON_CLOSE);
 
+            writer.write("GET CONVERSATION");
+            writer.println();
+            writer.flush();
 
-            pw.write("ChatRunning");
-            pw.println();
-            pw.flush();
+            writer.write(username);
+            writer.println();
+            writer.flush();
 
-            pw.write(username);
-            pw.println();
-            pw.flush();
+            writer.write(recipient);
+            writer.println();
+            writer.flush();
 
-            pw.write(recipient);
-            pw.println();
-            pw.flush();
+            String serverResponse = reader.readLine();
+            switch (serverResponse) {
+                case "CONVERSATION FOUND" -> {
+                    StringBuilder conversation = new StringBuilder();
 
-            String addToBox = "";
+                    String line;
+                    while (!(line = reader.readLine()).equals("END;")) {
+                        conversation.append(line).append("\n");
+                    }
 
-            String line;
-            while ((line = bfr.readLine()) != null) {
-                if (!line.equals("End")) {
-                    addToBox = addToBox + "\n" + line;
-                } else if (line.equals("End")) {
-                    break;
+                    chatBox.setText(String.valueOf(conversation));
+                }
+                case "FILE ERROR" -> {
+                    JOptionPane.showMessageDialog(null, "There was an error reading a file!",
+                            "Error", JOptionPane.ERROR_MESSAGE);
                 }
             }
-
-            chatBox.setText(addToBox);
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
     }
 
     ActionListener actionListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                PrintWriter pw = new PrintWriter(socket.getOutputStream());
-                BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter writer = new PrintWriter(socket.getOutputStream());
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 
-                if (e.getSource() == exit) {                //takes user back to menu frame
-                    if (userStatus.equals("seller")) {
-                        frame.dispose();
-                        SwingUtilities.invokeLater(new SellerFrame(socket, username));
-                    } else if (userStatus.equals("customer")) {
-                        frame.dispose();
+                String serverResponse;
+
+                if (e.getSource() == exitButton) {
+                    if (status.equals("customer")) {
+                        chatFrame.dispose();
                         SwingUtilities.invokeLater(new CustomerFrame(socket, username));
+                    } else if (status.equals("seller")) {
+                        chatFrame.dispose();
+                        SwingUtilities.invokeLater(new SellerFrame(socket, username));
                     }
                 }
-                if (e.getSource() == send) {
-                    if (messageText.getText().isEmpty()) {
-                        JOptionPane.showMessageDialog(null, "You have not typed in a message",
-                                "No message", JOptionPane.ERROR_MESSAGE);
+
+                if (e.getSource() == sendMessageButton) {
+                    if (messageTextField.getText().isEmpty()) {
+                        JOptionPane.showMessageDialog(null, "Please enter a message!",
+                                "Error", JOptionPane.ERROR_MESSAGE);
                     } else {
-                        pw.write("SendMessage");        //writes command to server
-                        pw.println();
-                        pw.flush();
+                        writer.write("SEND MESSAGE");
+                        writer.println();
+                        writer.flush();
 
-                        pw.write(username);                 //writes the client's username
-                        pw.println();
-                        pw.flush();
+                        writer.write(username);
+                        writer.println();
+                        writer.flush();
 
-                        pw.write(recipient);                //writes who the client is writing to
-                        pw.println();
-                        pw.flush();
+                        writer.write(recipient);
+                        writer.println();
+                        writer.flush();
 
-                        pw.write(messageText.getText());       //writes the message client wants to send
-                        pw.println();
-                        pw.flush();
+                        writer.write(messageTextField.getText());
+                        writer.println();
+                        writer.flush();
 
-                        if (bfr.readLine().equals("No")) {
-                            JOptionPane.showMessageDialog(null, "Message could not be sent",
-                                    "ERROR", JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Refresh to see your message " +
-                                    "updates", "Please Refresh", JOptionPane.INFORMATION_MESSAGE);
+                        serverResponse = reader.readLine();
+                        switch (serverResponse) {
+                            case "MESSAGE SEND SUCCESSFUL" -> {
+                                String localDateTime = String.valueOf(LocalDateTime.now());
+                                String date = localDateTime.substring(0, localDateTime.indexOf('T'));
+                                String time = localDateTime.substring(localDateTime.indexOf('T') + 1,
+                                        localDateTime.indexOf('.'));
 
+                                if (chatBox.getText().isEmpty()) {
+                                    chatBox.setText(username + " to " + recipient + " @ " + date + " " + time + ": " +
+                                            messageTextField.getText());
+                                } else {
+                                    chatBox.setText(chatBox.getText() + "\n" + username + " to " + recipient + " @ " +
+                                            date + " " + time + ": " + messageTextField.getText());
+                                }
+                                messageTextField.setText("");
+                            }
+                            case "MESSAGE SEND UNSUCCESSFUL" -> {
+                                JOptionPane.showMessageDialog(null, "Message could not be " +
+                                        "sent!", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
                         }
                     }
                 }
-                if (e.getSource() == refresh) {
-                    pw.write("ChatRunning");
-                    pw.println();
-                    pw.flush();
 
-                    pw.write(username);
-                    pw.println();
-                    pw.flush();
+                if (e.getSource() == refreshChatButton) {
+                    writer.write("GET CONVERSATION");
+                    writer.println();
+                    writer.flush();
 
-                    pw.write(recipient);
-                    pw.println();
-                    pw.flush();
+                    writer.write(username);
+                    writer.println();
+                    writer.flush();
 
-                    String addToBox = "";
+                    writer.write(recipient);
+                    writer.println();
+                    writer.flush();
 
-                    String line;
-                    while ((line = bfr.readLine()) != null) {
-                        if (!line.equals("End")) {
-                            addToBox = addToBox + "\n" + line;
-                        } else if (line.equals("End")) {
-                            break;
-                        }
-                    }
-
-                    chatBox.setText(addToBox);
-                }
-                if (e.getSource() == delete) {
-                    pw.write("DeleteMessage");
-                    pw.println();
-                    pw.flush();
-
-                    pw.write(username);
-                    pw.println();
-                    pw.flush();
-
-                    pw.write(recipient);
-                    pw.println();
-                    pw.flush();
-
-                    String response = bfr.readLine();
-
-                    switch (response) {
-                        case "Yes" -> {
-                            ArrayList<String> messagesSent = new ArrayList<>();
+                    serverResponse = reader.readLine();
+                    switch (serverResponse) {
+                        case "CONVERSATION FOUND" -> {
+                            StringBuilder conversation = new StringBuilder();
 
                             String line;
-                            while ((line = bfr.readLine()) != null) {
-                                if (!line.equals("End")) {
-                                    messagesSent.add(line);
-                                } else if (line.equals("End")) {
-                                    break;
-                                }
+                            while (!(line = reader.readLine()).equals("END;")) {
+                                conversation.append(line).append("\n");
                             }
 
-                            String[] messageOptions = new String[messagesSent.size()];
-                            for (int i = 0; i < messagesSent.size(); i++) {
-                                messageOptions[i] = messagesSent.get(i);
-                            }
-
-                            String userSelection = selectOption("What message do you want to delete?",
-                                    messageOptions, "Choose message");
-
-                            if (userSelection == null) {
-                                pw.write("Stop");
-                                pw.println();
-                                pw.flush();
-                                return;
-                            } else {
-                                pw.write("Continue");
-                                pw.println();
-                                pw.flush();
-
-                                pw.write(userSelection);
-                                pw.println();
-                                pw.flush();
-
-                                String deleteResponse = bfr.readLine();
-                                if (deleteResponse.equals("Yes")) {
-                                    JOptionPane.showMessageDialog(null, "Successfully " +
-                                                    "deleted your message. Please refresh to see updated chat",
-                                            "Success", JOptionPane.INFORMATION_MESSAGE);
-                                } else {
-                                    JOptionPane.showMessageDialog(null , "Something went " +
-                                                    "wrong in deleting your message.", "Deletion failure",
-                                            JOptionPane.ERROR_MESSAGE);
-                                }
-                            }
-
+                            chatBox.setText(String.valueOf(conversation));
                         }
-                        case "NoMessages" -> {
-                            JOptionPane.showMessageDialog(null,
-                                    "No messages exist in this chat", "No messages",
-                                    JOptionPane.ERROR_MESSAGE);
-                        }
-                        case "SentNone" -> {
-                            JOptionPane.showMessageDialog(null, "You have not sent any " +
-                                    "messages to delete", "You sent no messages", JOptionPane.ERROR_MESSAGE);
+                        case "FILE ERROR" -> {
+                            JOptionPane.showMessageDialog(null, "There was an error reading " +
+                                    "a file!", "Error", JOptionPane.ERROR_MESSAGE);
                         }
                     }
                 }
-                if (e.getSource() == edit) {
-                    pw.write("EditMessage");
-                    pw.println();
-                    pw.flush();
 
-                    pw.write(username);
-                    pw.println();
-                    pw.flush();
+                if (e.getSource() == deleteMessageButton) {
+                    writer.write("DELETE MESSAGE");
+                    writer.println();
+                    writer.flush();
 
-                    pw.write(recipient);
-                    pw.println();
-                    pw.flush();
+                    writer.write(username);
+                    writer.println();
+                    writer.flush();
 
-                    String response = bfr.readLine();
+                    writer.write(recipient);
+                    writer.println();
+                    writer.flush();
 
-                    switch (response) {
-                        case "NoMessages" -> {
-                            JOptionPane.showMessageDialog(null,
-                                    "No messages exist in this chat", "No messages",
-                                    JOptionPane.ERROR_MESSAGE);
-                        }
-                        case "SentNone" -> {
-                            JOptionPane.showMessageDialog(null, "You have not sent any " +
-                                    "messages to delete", "You sent no messages", JOptionPane.ERROR_MESSAGE);
-                        }
-                        case "Yes" -> {
-                            ArrayList<String> messagesSent = new ArrayList<>();
+                    serverResponse = reader.readLine();
+                    switch (serverResponse) {
+                        case "MESSAGES FOUND" -> {
+                            String[] messagesSent = new String[0];
 
                             String line;
-                            while ((line = bfr.readLine()) != null) {
-                                if (!line.equals("End")) {
-                                    messagesSent.add(line);
-                                } else if (line.equals("End")) {
-                                    break;
-                                }
+                            while (!(line = reader.readLine()).equals("END;")) {
+                                messagesSent = Arrays.copyOf(messagesSent, messagesSent.length + 1);
+                                messagesSent[messagesSent.length - 1] = line;
                             }
 
-                            String[] messageOptions = new String[messagesSent.size()];
-                            for (int i = 0; i < messagesSent.size(); i++) {
-                                messageOptions[i] = messagesSent.get(i);
+                            String messageSelection = selectOption("Which message would you like to delete?",
+                                    messagesSent);
+
+                            if (messageSelection != null) {
+                                writer.write(messageSelection);
+                                writer.println();
+                                writer.flush();
+
+                                JOptionPane.showMessageDialog(null, "Message deleted " +
+                                        "successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                            }
+                        }
+                        case "NO MESSAGES SENT" -> {
+                            JOptionPane.showMessageDialog(null, "You have not sent any " +
+                                    "messages to this user!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                        case "FILE ERROR" -> {
+                            JOptionPane.showMessageDialog(null, "There was an error reading " +
+                                    "a file!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                    }
+                }
+
+                if (e.getSource() == editMessageButton) {
+                    writer.write("EDIT MESSAGE");
+                    writer.println();
+                    writer.flush();
+
+                    writer.write(username);
+                    writer.println();
+                    writer.flush();
+
+                    writer.write(recipient);
+                    writer.println();
+                    writer.flush();
+
+                    serverResponse = reader.readLine();
+                    switch (serverResponse) {
+                        case "MESSAGES FOUND" -> {
+                            String[] messagesSent = new String[0];
+
+                            String line;
+                            while (!(line = reader.readLine()).equals("END;")) {
+                                messagesSent = Arrays.copyOf(messagesSent, messagesSent.length + 1);
+                                messagesSent[messagesSent.length - 1] = line;
                             }
 
-                            String userSelection = selectOption("What message do you want to edit?",
-                                    messageOptions, "Choose message");
+                            String messageSelection = selectOption("Which message would you like to edit?",
+                                    messagesSent);
 
-                            if (userSelection == null) {
-                                pw.write("Stop");
-                                pw.println();
-                                pw.flush();
-                                return;
-                            } else {
-                                String changedTo = JOptionPane.showInputDialog(null, "What " +
-                                                "do you want to change that message to?", "Edit Message",
-                                        JOptionPane.QUESTION_MESSAGE);
+                            if (messageSelection != null) {
+                                writer.write(messageSelection);
+                                writer.println();
+                                writer.flush();
 
-                                if (changedTo == null) {
-                                    pw.write("Stop");
-                                    pw.println();
-                                    pw.flush();
-                                    return;
-                                } else if (changedTo.isEmpty()) {
-                                    pw.write("Stop");
-                                    pw.println();
-                                    pw.flush();
-                                    JOptionPane.showMessageDialog(null, "You have not typed " +
-                                            "anything", "No input", JOptionPane.ERROR_MESSAGE);
-                                } else {
-                                    pw.write("Continue");
-                                    pw.println();
-                                    pw.flush();
-                                    pw.write(userSelection);
-                                    pw.println();
-                                    pw.flush();
-
-                                    pw.write(changedTo);
-                                    pw.println();
-                                    pw.flush();
-
-                                    String editResponse = bfr.readLine();
-
-                                    if (editResponse.equals("Yes")) {
-                                        JOptionPane.showMessageDialog(null, "Successfully " +
-                                                        "edited your message. Please refresh to see updated chat",
-                                                "Success", JOptionPane.INFORMATION_MESSAGE);
-                                    } else {
-                                        JOptionPane.showMessageDialog(null , "Something went " +
-                                                        "wrong in editing your message.", "Edit failure",
-                                                JOptionPane.ERROR_MESSAGE);
+                                String newMessage;
+                                do {
+                                    newMessage = JOptionPane.showInputDialog(null, "What " +
+                                                    "would you like to edit this message to be?", "Edit",
+                                            JOptionPane.QUESTION_MESSAGE);
+                                    if (newMessage == null) {
+                                        break;
+                                    } else if (newMessage.isEmpty()) {
+                                        JOptionPane.showMessageDialog(null, "Please enter a " +
+                                                "new message!", "Error", JOptionPane.ERROR_MESSAGE);
                                     }
+                                } while (newMessage.isEmpty());
+
+                                if (newMessage != null) {
+                                    writer.write(newMessage);
+                                    writer.println();
+                                    writer.flush();
+
+                                    JOptionPane.showMessageDialog(null, "Message edited " +
+                                            "successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
                                 }
                             }
                         }
+                        case "NO MESSAGES SENT" -> {
+                            JOptionPane.showMessageDialog(null, "You have not sent any " +
+                                    "messages to this user!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
+                        case "FILE ERROR" -> {
+                            JOptionPane.showMessageDialog(null, "There was an error reading " +
+                                    "a file!", "Error", JOptionPane.ERROR_MESSAGE);
+                        }
                     }
                 }
-            } catch (Exception a) {
-                JOptionPane.showMessageDialog(null, "An issue occurred (ChF)", "Error",
+
+                if (e.getSource() == sendFileButton) { // TODO
+                    JOptionPane.showMessageDialog(null, "This feature has not been " +
+                            "implemented yet!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+
+                if (e.getSource() == exportConversationButton) { // TODO
+                    JOptionPane.showMessageDialog(null, "This feature has not been " +
+                            "implemented yet!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (IOException ioException) {
+                JOptionPane.showMessageDialog(null, "Connection lost!", "Error",
                         JOptionPane.ERROR_MESSAGE);
-                a.printStackTrace();
             }
         }
     };
 
-    public static String selectOption(String prompt, String[] options, String title) {
+    public static String selectOption(String prompt, String[] options) {
         String selection;
         try {
-            selection = (String) JOptionPane.showInputDialog(null, prompt, title,
+            selection = (String) JOptionPane.showInputDialog(null, prompt, "Options",
                     JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         } catch (NullPointerException e) {
             return null;
         }
         return selection;
     }
-
 }

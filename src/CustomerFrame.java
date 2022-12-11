@@ -3,32 +3,25 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.regex.Pattern;
 
-/**
- * EZ Messenger
- *
- * Creates a frame for customer users
- *
- * @author Shreeya Ettireddy
- *
- * @version 12/11/22
- *
- */
-
 public class CustomerFrame extends JFrame implements Runnable {
-    Socket socket;
     String username;
-    JFrame frame;
-    JButton message;
-    JButton block;
-    JButton edit;
-    JButton delete;
-    JButton logout;
+
+    JFrame customerFrame;
+    JButton messageButton;
+    JButton blockButton;
+    JButton dashboardButton;
+    JButton editAccountButton;
+    JButton deleteAccountButton;
+    JButton logoutButton;
+
+    Socket socket;
 
     public CustomerFrame(Socket socket, String username) {
         this.socket = socket;
@@ -37,434 +30,456 @@ public class CustomerFrame extends JFrame implements Runnable {
 
     @Override
     public void run() {
-        frame = new JFrame("Hello " + username);
-        frame.setSize(400, 300);
-        frame.setLocationRelativeTo(null);
-        frame.setLayout(new GridBagLayout());
+        customerFrame = new JFrame("Customer Options");
+        customerFrame.setSize(400, 300);
+        customerFrame.setLocationRelativeTo(null);
+        customerFrame.setLayout(new GridBagLayout());
         GridBagConstraints gbc = new GridBagConstraints();
 
-        JLabel welcome = new JLabel("What do you want to do?");
-        message = new JButton("Message a Store");
-        message.addActionListener(actionListener);
+        JLabel prompt = new JLabel("What would you like to do?");
+        messageButton = new JButton("Message a store");
+        messageButton.addActionListener(actionListener);
 
-        block = new JButton("Block a Seller");
-        block.addActionListener(actionListener);
+        blockButton = new JButton("Block/unblock a seller");
+        blockButton.addActionListener(actionListener);
 
-        edit = new JButton("Edit Account");
-        edit.addActionListener(actionListener);
+        dashboardButton = new JButton("View dashboard");
+        dashboardButton.addActionListener(actionListener);
 
-        delete = new JButton("Delete Account");
-        delete.addActionListener(actionListener);
+        editAccountButton = new JButton("Edit account");
+        editAccountButton.addActionListener(actionListener);
 
-        logout = new JButton("Logout");
-        logout.addActionListener(actionListener);
+        deleteAccountButton = new JButton("Delete account");
+        deleteAccountButton.addActionListener(actionListener);
+
+        logoutButton = new JButton("Logout");
+        logoutButton.addActionListener(actionListener);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
         gbc.gridwidth = 1;
         gbc.gridheight = 1;
-        frame.add(welcome, gbc);
+        customerFrame.add(prompt, gbc);
 
         gbc.gridy = 1;
         gbc.gridheight = 1;
-        frame.add(message, gbc);
+        customerFrame.add(messageButton, gbc);
 
         gbc.gridy = 2;
-        frame.add(block, gbc);
+        customerFrame.add(blockButton, gbc);
 
         gbc.gridy = 3;
-        frame.add(edit, gbc);
+        customerFrame.add(dashboardButton, gbc);
 
         gbc.gridy = 4;
-        frame.add(delete, gbc);
+        customerFrame.add(editAccountButton, gbc);
 
         gbc.gridy = 5;
-        frame.add(logout, gbc);
+        customerFrame.add(deleteAccountButton, gbc);
 
-        frame.setVisible(true);
-        frame.setResizable(false);
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        gbc.gridy = 6;
+        customerFrame.add(logoutButton, gbc);
+
+        customerFrame.setVisible(true);
+        customerFrame.setResizable(false);
+        customerFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     ActionListener actionListener = new ActionListener() {
         @Override
         public void actionPerformed(ActionEvent e) {
             try {
-                PrintWriter pw = new PrintWriter(socket.getOutputStream());
-                BufferedReader bfr = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                BufferedReader reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
-                if (e.getSource() == message) {
-                    String choice = String.valueOf(JOptionPane.showConfirmDialog(null,
-                            "Click Yes to search for store.\nClick No to view a list of stores.",
-                            "Search Prompt", JOptionPane.YES_NO_OPTION));
+                String serverResponse;
 
-                    if (choice == null) {
-                        return;
-                    } else {
-                        if (choice.isEmpty()) {
-                            return;
-                        } else if (choice.equals("0")) {            //yes - search
-                            String search = JOptionPane.showInputDialog(null,
-                                    "Type in an exact store name", "Search for Store",
-                                    JOptionPane.QUESTION_MESSAGE);
+                if (e.getSource() == messageButton) {
+                    String[] searchOptions = {"Select a store", "Search for a store"};
+                    String searchSelection = selectOption("What would you like to do?", searchOptions);
 
-                            if (search == null) {           //cancel option
-                                return;
-                            } else if (search.isEmpty()) {         //clicks yes but has no text
-                                JOptionPane.showMessageDialog(null, "Type in a store " +
-                                        "name", "No input", JOptionPane.ERROR_MESSAGE);
-                            } else {
-                                pw.write("Search");           //writes command to server
-                                pw.println();
-                                pw.flush();
+                    if (searchSelection != null) {
+                        switch (searchSelection) {
+                            case "Select a store" -> {
+                                writer.write("MESSAGE OPTIONS");
+                                writer.println();
+                                writer.flush();
 
-                                pw.write(username);
-                                pw.println();
-                                pw.flush();
+                                writer.write(username);
+                                writer.println();
+                                writer.flush();
 
-                                pw.write(search);           //writes over user client is searching for
-                                pw.println();
-                                pw.flush();
+                                serverResponse = reader.readLine();
+                                switch (serverResponse) {
+                                    case "STORES FOUND" -> {
+                                        String[] stores = new String[0];
 
-                                pw.write("customer");           //writes over user status
-                                pw.println();
-                                pw.flush();
+                                        String line;
+                                        while (!(line = reader.readLine()).equals("END;")) {
+                                            stores = Arrays.copyOf(stores, stores.length + 1);
+                                            stores[stores.length - 1] = line;
+                                        }
 
-                                String response = bfr.readLine();
+                                        String storeSelection = selectOption("Which store would you like " +
+                                                "to message?", stores);
 
-                                switch (response) {
-                                    case "No" -> {
-                                        JOptionPane.showMessageDialog(null, "This store doesn't " +
-                                                "exist", "Not Existing", JOptionPane.ERROR_MESSAGE);
+                                        if (storeSelection != null) {
+                                            writer.write("SEARCH");
+                                            writer.println();
+                                            writer.flush();
+
+                                            writer.write(username);
+                                            writer.println();
+                                            writer.flush();
+
+                                            writer.write(storeSelection);
+                                            writer.println();
+                                            writer.flush();
+
+                                            serverResponse = reader.readLine();
+                                            switch (serverResponse) {
+                                                case "BLOCKED YOU" -> {
+                                                    JOptionPane.showMessageDialog(null,
+                                                            "This seller has blocked you!", "Error",
+                                                            JOptionPane.ERROR_MESSAGE);
+                                                }
+                                                case "YOU BLOCKED" -> {
+                                                    JOptionPane.showMessageDialog(null, "You " +
+                                                                    "have blocked this seller!", "Error",
+                                                            JOptionPane.ERROR_MESSAGE);
+                                                }
+                                                case "FILE ERROR" -> {
+                                                    JOptionPane.showMessageDialog(null,
+                                                            "There was an error reading a file!", "Error",
+                                                            JOptionPane.ERROR_MESSAGE);
+                                                }
+                                                default -> {
+                                                    customerFrame.dispose();
+
+                                                    SwingUtilities.invokeLater(new ChatFrame(socket, username,
+                                                            "customer", serverResponse));
+                                                }
+                                            }
+                                        }
                                     }
-                                    case "blocked" -> {
-                                        JOptionPane.showMessageDialog(null, "This store seller has"
-                                                        + " Blocked you/You have blocked this store seller",
-                                                "Block Error", JOptionPane.ERROR_MESSAGE);
+                                    case "NO STORES" -> {
+                                        JOptionPane.showMessageDialog(null, "There are no " +
+                                                        "stores for you to message at this time!", "Error",
+                                                JOptionPane.ERROR_MESSAGE);
                                     }
-                                    case "Yes" -> {
-                                        String storeSeller = bfr.readLine();        //gets store seller name
-                                        frame.dispose();
-                                        SwingUtilities.invokeLater(new ChatFrame(socket, username, "customer",
-                                                storeSeller, "seller"));
+                                    case "FILE ERROR" -> {
+                                        JOptionPane.showMessageDialog(null, "There was an " +
+                                                "error reading a file!", "Error", JOptionPane.ERROR_MESSAGE);
                                     }
                                 }
                             }
-                        } else if (choice.equals("1")) {            //no - view list
-                            pw.write("MessageOptions");     //writes command to server
-                            pw.println();
-                            pw.flush();
+                            case "Search for a store" -> {
+                                String storeToMessage;
+                                do {
+                                    storeToMessage = JOptionPane.showInputDialog(null,
+                                            "Enter the name of the store you would like to message:",
+                                            "Search", JOptionPane.QUESTION_MESSAGE);
+                                    if (storeToMessage == null) {
+                                        break;
+                                    } else if (storeToMessage.isEmpty()) {
+                                        JOptionPane.showMessageDialog(null, "Please enter a " +
+                                                "store name!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    }
+                                } while (storeToMessage.isEmpty());
 
-                            pw.write(username);                 //writes username to server
-                            pw.println();
-                            pw.flush();
+                                if (storeToMessage != null) {
+                                    writer.write("SEARCH");
+                                    writer.println();
+                                    writer.flush();
 
-                            pw.write("customer");           //writes status to customer
-                            pw.println();
-                            pw.flush();
+                                    writer.write(username);
+                                    writer.println();
+                                    writer.flush();
 
-                            String serverResponse = bfr.readLine();
+                                    writer.write(storeToMessage);
+                                    writer.println();
+                                    writer.flush();
 
-                            switch (serverResponse) {
-                                case "None" -> {
-                                    JOptionPane.showConfirmDialog(null, "No stores to message "
-                                            + "at this time", "No stores to message", JOptionPane.PLAIN_MESSAGE);
-                                }
-                                case "Yes" -> {
-                                    ArrayList<String> stores = new ArrayList<>();
-
-                                    String line;
-                                    while ((line = bfr.readLine()) != null) {
-                                        if (!line.equals("End")) {
-                                            stores.add(line);
-                                        } else if (line.equals("End")) {
-                                            break;
+                                    serverResponse = reader.readLine();
+                                    switch (serverResponse) {
+                                        case "STORE NOT FOUND" -> {
+                                            JOptionPane.showMessageDialog(null, "No stores " +
+                                                            "exist with this name!", "Error",
+                                                    JOptionPane.ERROR_MESSAGE);
                                         }
-                                    }
+                                        case "BLOCKED YOU" -> {
+                                            JOptionPane.showMessageDialog(null, "This seller " +
+                                                            "has blocked you!", "Error",
+                                                    JOptionPane.ERROR_MESSAGE);
+                                        }
+                                        case "YOU BLOCKED" -> {
+                                            JOptionPane.showMessageDialog(null, "You have " +
+                                                            "blocked this seller!", "Error",
+                                                    JOptionPane.ERROR_MESSAGE);
+                                        }
+                                        case "FILE ERROR" -> {
+                                            JOptionPane.showMessageDialog(null, "There was " +
+                                                            "an error reading a file!", "Error",
+                                                    JOptionPane.ERROR_MESSAGE);
+                                        }
+                                        default -> {
+                                            customerFrame.dispose();
 
-                                    String[] customerOptions = new String[stores.size()];
-                                    for (int i = 0; i < stores.size(); i++) {
-                                        customerOptions[i] = stores.get(i);
-                                    }
-
-                                    String storeSelection = selectOption("Who do you want to message?",
-                                            customerOptions, "Choose store");
-
-                                    if (storeSelection == null) {
-                                        return;
-                                    } else {
-                                        pw.write("Search");
-                                        pw.println();
-                                        pw.flush();
-
-                                        pw.write(username);
-                                        pw.println();
-                                        pw.flush();
-
-                                        pw.write(storeSelection);
-                                        pw.println();
-                                        pw.flush();
-
-                                        pw.write("customer");
-                                        pw.println();
-                                        pw.flush();
-
-                                        String response = bfr.readLine();
-
-                                        if (response.equals("Yes")) {
-                                            String storeSeller = bfr.readLine();
                                             SwingUtilities.invokeLater(new ChatFrame(socket, username,
-                                                    "customer", storeSeller, "seller"));
-                                            frame.dispose();
-                                        } else if (response.equals("blocked")) {
-                                            JOptionPane.showMessageDialog(null, "This user has"
-                                                            + " blocked you/You have blocked this user",
-                                                    "Block Error", JOptionPane.ERROR_MESSAGE);
+                                                    "customer", serverResponse));
                                         }
                                     }
-
-
-                                }
-                            }
-
-
-                        }
-                    }
-                } else if (e.getSource() == block) {
-                    String[] options = {"Block", "Invisible"};
-                    String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you "
-                                    + "want to block a seller or become invisible to them?",
-                            "Blocking/Invisibility", 0,
-                            JOptionPane.INFORMATION_MESSAGE, null, options, null));
-
-                    //option 0: block, option 1: invisible
-                    if (choice == null) {
-                        return;
-                    } else if (choice.isEmpty()) {
-                        return;
-                    } else if (choice.equals("0")) {
-                        String blocked = JOptionPane.showInputDialog(null, "What user do you " +
-                                "want to block?", "Block Seller", JOptionPane.QUESTION_MESSAGE);
-
-                        if (blocked == null) {
-                            return;
-                        } else if (blocked.isEmpty()) {
-                            JOptionPane.showMessageDialog(null, "You have not typed anything",
-                                    "No Input", JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            pw.write("Block");          //writes command to server
-                            pw.println();
-                            pw.flush();
-
-                            pw.write(username);             //writes username to server
-                            pw.println();
-                            pw.flush();
-
-                            pw.write(blocked);              //writes over who client wants to block
-                            pw.println();
-                            pw.flush();
-
-                            String response = bfr.readLine();   //gets response from server
-                            switch (response) {
-                                case "No" -> {
-                                    JOptionPane.showMessageDialog(null, "This user does not" +
-                                            " exist!", "Error", JOptionPane.ERROR_MESSAGE);
-                                }
-                                case "Already" -> {
-                                    JOptionPane.showMessageDialog(null, "You have already" +
-                                            " blocked this user!", "Already blocked!", JOptionPane.ERROR_MESSAGE);
-                                }
-                                case "Yes" -> {
-                                    JOptionPane.showMessageDialog(null, "You have blocked " +
-                                            blocked + "!", "Success!", JOptionPane.INFORMATION_MESSAGE);
-                                }
-                            }
-                        }
-
-                    } else if (choice.equals("1")) {
-                        String invisibleTo = JOptionPane.showInputDialog(null, "What user " +
-                                        "do you want to be invisible to?", "Invisibility mode",
-                                JOptionPane.QUESTION_MESSAGE);
-
-                        if (invisibleTo == null) {
-                            return;
-                        } else if (invisibleTo.isEmpty()) {
-                            JOptionPane.showMessageDialog(null, "You have not typed anything",
-                                    "No Input", JOptionPane.ERROR_MESSAGE);
-                        } else {
-                            pw.write("Invisible");          //writes command to server
-                            pw.println();
-                            pw.flush();
-
-                            pw.write(username);             //writes username to server
-                            pw.println();
-                            pw.flush();
-
-                            pw.write(invisibleTo);              //writes over who client wants to block
-                            pw.println();
-                            pw.flush();
-
-                            String response = bfr.readLine();   //gets response from server
-                            switch (response) {
-                                case "No" -> {
-                                    JOptionPane.showMessageDialog(null, "This user does not" +
-                                            " exist!", "Error", JOptionPane.ERROR_MESSAGE);
-                                }
-                                case "Already" -> {
-                                    JOptionPane.showMessageDialog(null, "You are already " +
-                                                    "invisible to this user!",
-                                            "Already Invisible!", JOptionPane.ERROR_MESSAGE);
-                                }
-                                case "Yes" -> {
-                                    JOptionPane.showMessageDialog(null, "You are invisible to "
-                                            + invisibleTo + "!", "Success!", JOptionPane.INFORMATION_MESSAGE);
                                 }
                             }
                         }
                     }
-                } else if (e.getSource() == edit) {
-                    String[] editOptions = {"Username", "Password", "Email"};   //user chooses what they want to edit
-                    String editSelection = selectOption("What would you like to edit", editOptions,
-                            "Edit Account");
+                }
 
-                    if (editSelection == null) {
-                        return;
-                    } else {
-                        String newChange = JOptionPane.showInputDialog(null, "What is your new "
-                                + editSelection + "?", "Edit " + editSelection, JOptionPane.QUESTION_MESSAGE);
+                if (e.getSource() == blockButton) {
+                    String[] blockOptions = {"Block/unblock a seller", "Become visible/invisible to a seller"};
+                    String blockSelection = selectOption("What would you like to do?", blockOptions);
 
-                        if (newChange == null) {           //cancel option
-                            return;
-                        }
-                        if (newChange.isEmpty()) {         //clicks yes but has no text
-                            JOptionPane.showMessageDialog(null, "You have not inputted anything"
-                                    , "No input", JOptionPane.ERROR_MESSAGE);
-                        }
-
-                        boolean validChange = false;
-                        if (editSelection.equals("Username") || editSelection.equals("Password")) {
-                            //checks username is valid
-
-                            if (newChange.length() >= 8 && !newChange.contains(" ")
-                                    && !newChange.contains(";")) {
-                                validChange = true;
-                            }
-                            if (!validChange) {                     //tells client they put invalid username
-                                JOptionPane.showMessageDialog(null, "Input a valid " +
-                                                "username/password " + "(at least 8 characters, no semicolons or " +
-                                                "spaces).",
-                                        "Invalid username/password", JOptionPane.ERROR_MESSAGE);
-                            }
-                        } else if (editSelection.equals("Email")) {     //checks if email is valid
-                            String emailRegex = "^[a-zA-Z0-9_+&*-]+" +
-                                    "(?:\\.[a-zA-Z0-9_+&*-]+)*@" +
-                                    "(?:[a-zA-Z0-9-]+\\.)+" +
-                                    "[a-zA-Z]{2,7}$";
-                            Pattern checkValidity = Pattern.compile(emailRegex);
-                            if (checkValidity.matcher(newChange).matches()) {
-                                validChange = true;
-
-                            }
-                            if (!validChange) {         //tells client they put invalid email
-                                JOptionPane.showMessageDialog(null, "Enter a valid email",
-                                        "Invalid email", JOptionPane.ERROR_MESSAGE);
-                            }
-                        }
-
-                        if (validChange) {
-                            pw.write("Edit");           //writes over the command to server
-                            pw.println();
-                            pw.flush();
-
-                            pw.write(username);             //writes over username to server
-                            pw.println();
-                            pw.flush();
-
-                            pw.write("customer");
-                            pw.println();
-                            pw.flush();
-
-                            pw.write(editSelection);        //writes over what the user wants to edit
-                            pw.println();
-                            pw.flush();
-
-                            pw.write(newChange);            //writes over what the user is changing it to
-                            pw.println();
-                            pw.flush();
-
-                            String response = bfr.readLine();
-
-                            switch (response) {
-                                case "Yes" -> {
-                                    JOptionPane.showMessageDialog(null, "Successfully edited!",
-                                            "Success!", JOptionPane.INFORMATION_MESSAGE);
-                                    if (editSelection.equals("Username")) {
-                                        username = newChange;
+                    if (blockSelection != null) {
+                        switch (blockSelection) {
+                            case "Block/unblock a seller" -> {
+                                String userToBlock;
+                                do {
+                                    userToBlock = JOptionPane.showInputDialog(null,
+                                            "Enter the username of the seller you would like to block or " +
+                                                    "unblock:", "Update Block Status",
+                                            JOptionPane.QUESTION_MESSAGE);
+                                    if (userToBlock == null) {
+                                        break;
+                                    } else if (userToBlock.isEmpty()) {
+                                        JOptionPane.showMessageDialog(null, "Please enter a " +
+                                                "username!", "Error", JOptionPane.ERROR_MESSAGE);
                                     }
-                                    frame.setTitle("Hello " + username);
+                                } while (userToBlock.isEmpty());
+
+                                if (userToBlock != null) {
+                                    writer.write("UPDATE BLOCK STATUS");
+                                    writer.println();
+                                    writer.flush();
+
+                                    writer.write(username);
+                                    writer.println();
+                                    writer.flush();
+
+                                    writer.write(userToBlock);
+                                    writer.println();
+                                    writer.flush();
+
+                                    serverResponse = reader.readLine();
+                                    switch (serverResponse) {
+                                        case "USER NOT FOUND" -> {
+                                            JOptionPane.showMessageDialog(null, "No sellers " +
+                                                            "exist with this username!", "Error",
+                                                    JOptionPane.ERROR_MESSAGE);
+                                        }
+                                        case "FILE ERROR" -> {
+                                            JOptionPane.showMessageDialog(null, "There was " +
+                                                            "an error reading a file!", "Error",
+                                                    JOptionPane.ERROR_MESSAGE);
+                                        }
+                                        default -> {
+                                            JOptionPane.showMessageDialog(null, "You have " +
+                                                            "successfully " + serverResponse + " " + userToBlock + "!",
+                                                    "Success", JOptionPane.INFORMATION_MESSAGE);
+                                        }
+                                    }
                                 }
-                                case "Same" -> {
-                                    JOptionPane.showMessageDialog(null, "This is your current "
-                                            + editSelection, "Unable to edit!", JOptionPane.ERROR_MESSAGE);
-                                }
-                                case "Used" -> {
-                                    JOptionPane.showMessageDialog(null, "This " +
-                                                    editSelection + " is being used!", "Unable to edit!",
-                                            JOptionPane.ERROR_MESSAGE);
+                            }
+                            case "Become visible/invisible to a seller" -> {
+                                String userToBecomeInvisibleTo;
+                                do {
+                                    userToBecomeInvisibleTo = JOptionPane.showInputDialog(null,
+                                            "Enter the username of the seller you would like to become " +
+                                                    "visible or invisible to:", "Update Visibility",
+                                            JOptionPane.QUESTION_MESSAGE);
+                                    if (userToBecomeInvisibleTo == null) {
+                                        break;
+                                    } else if (userToBecomeInvisibleTo.isEmpty()) {
+                                        JOptionPane.showMessageDialog(null, "Please enter a " +
+                                                "username!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    }
+                                } while (userToBecomeInvisibleTo.isEmpty());
+
+                                if (userToBecomeInvisibleTo != null) {
+                                    writer.write("UPDATE VISIBILITY");
+                                    writer.println();
+                                    writer.flush();
+
+                                    writer.write(username);
+                                    writer.println();
+                                    writer.flush();
+
+                                    writer.write(userToBecomeInvisibleTo);
+                                    writer.println();
+                                    writer.flush();
+
+                                    serverResponse = reader.readLine();
+                                    switch (serverResponse) {
+                                        case "USER NOT FOUND" -> {
+                                            JOptionPane.showMessageDialog(null, "No sellers " +
+                                                            "exist with this username!", "Error",
+                                                    JOptionPane.ERROR_MESSAGE);
+                                        }
+                                        case "FILE ERROR" -> {
+                                            JOptionPane.showMessageDialog(null, "There was " +
+                                                            "an error reading a file!", "Error",
+                                                    JOptionPane.ERROR_MESSAGE);
+                                        }
+                                        default -> {
+                                            JOptionPane.showMessageDialog(null, "You have " +
+                                                            "successfully become " + serverResponse + " to " +
+                                                            userToBecomeInvisibleTo + "!", "Success",
+                                                    JOptionPane.INFORMATION_MESSAGE);
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+                }
 
-                } else if (e.getSource() == delete) {
-                    String deleteConfirm = String.valueOf(JOptionPane.showConfirmDialog(null,
-                            "Are you sure you want to delete your account?",
-                            "Account Deletion", JOptionPane.YES_NO_OPTION));
+                if (e.getSource() == dashboardButton) { // TODO
+                    JOptionPane.showMessageDialog(null, "This feature has not been " +
+                            "implemented yet!", "Error", JOptionPane.ERROR_MESSAGE);
+                }
 
-                    if (deleteConfirm == null) {
-                        return;
-                    } else {
-                        if (deleteConfirm.isEmpty()) {
-                            return;
+                if (e.getSource() == editAccountButton) {
+                    String[] editOptions = {"Username", "Password", "Email"};
+                    String editSelection = selectOption("What would you like to edit?", editOptions);
+
+                    if (editSelection != null) {
+                        String newInfo;
+                        do {
+                            newInfo = JOptionPane.showInputDialog(null, "Enter your new " +
+                                    editSelection.toLowerCase() + ":", "Edit", JOptionPane.QUESTION_MESSAGE);
+                            if (newInfo == null) {
+                                break;
+                            } else if (newInfo.isEmpty()) {
+                                JOptionPane.showMessageDialog(null, "Please enter a new " +
+                                        editSelection.toLowerCase() + "!", "Error", JOptionPane.ERROR_MESSAGE);
+                            } else if (editSelection.equals("Username") || editSelection.equals("Password")) {
+                                if (newInfo.length() < 8 || newInfo.contains(" ") || newInfo.contains(";")) {
+                                    JOptionPane.showMessageDialog(null, "Please enter a " +
+                                            "valid " + editSelection.toLowerCase() + " (at least 8 characters, " +
+                                            "no semicolons or spaces).", "Error", JOptionPane.ERROR_MESSAGE);
+                                    newInfo = "";
+                                }
+                            } else if (editSelection.equals("Email")) {
+                                String emailRegex = "^[a-zA-Z0-9_+&*-]+" +
+                                        "(?:\\.[a-zA-Z0-9_+&*-]+)*@" +
+                                        "(?:[a-zA-Z0-9-]+\\.)+" +
+                                        "[a-zA-Z]{2,7}$";
+                                Pattern checkValidity = Pattern.compile(emailRegex);
+
+                                if (!checkValidity.matcher(newInfo).matches()) {
+                                    JOptionPane.showMessageDialog(null, "Please enter a " +
+                                            "valid email!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    newInfo = "";
+                                }
+                            }
+                        } while (newInfo.isEmpty());
+
+                        if (newInfo != null) {
+                            writer.write("EDIT ACCOUNT");
+                            writer.println();
+                            writer.flush();
+
+                            writer.write(username);
+                            writer.println();
+                            writer.flush();
+
+                            writer.write(editSelection.toUpperCase());
+                            writer.println();
+                            writer.flush();
+
+                            writer.write(newInfo);
+                            writer.println();
+                            writer.flush();
+
+                            serverResponse = reader.readLine();
+                            switch (serverResponse) {
+                                case "ACCOUNT EDIT SUCCESSFUL" -> {
+                                    if (editSelection.equals("Username")) {
+                                        username = newInfo;
+                                    }
+                                    JOptionPane.showMessageDialog(null, editSelection +
+                                                    " edited successfully!", "Success",
+                                            JOptionPane.INFORMATION_MESSAGE);
+                                }
+                                case "NO CHANGE" -> {
+                                    JOptionPane.showMessageDialog(null, "The " +
+                                                    editSelection.toLowerCase() + " you entered is the same " +
+                                                    "as your current " + editSelection.toLowerCase() + "!",
+                                            "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                                case "NEW INFO TAKEN" -> {
+                                    if (editSelection.equals("Username")) {
+                                        JOptionPane.showMessageDialog(null, "The username " +
+                                                "you entered is taken!", "Error", JOptionPane.ERROR_MESSAGE);
+                                    } else {
+                                        JOptionPane.showMessageDialog(null, "The email you " +
+                                                        "entered is already being used!", "Error",
+                                                JOptionPane.ERROR_MESSAGE);
+                                    }
+                                }
+                                case "FILE ERROR" -> {
+                                    JOptionPane.showMessageDialog(null, "There was an error " +
+                                            "reading a file!", "Error", JOptionPane.ERROR_MESSAGE);
+                                }
+                            }
                         }
                     }
-                    if (deleteConfirm.equals("0")) {
-                        pw.write("Delete");
-                        pw.println();
-                        pw.flush();
+                }
 
-                        pw.write(username);
-                        pw.println();
-                        pw.flush();
+                if (e.getSource() == deleteAccountButton) {
+                    int confirmDelete = JOptionPane.showConfirmDialog(null,
+                            "Are you sure you would like to delete your account?",
+                            "Delete Account", JOptionPane.YES_NO_OPTION);
 
-                        String response = bfr.readLine();
-                        if (response.equals("Success")) {
-                            JOptionPane.showMessageDialog(null, "Your account was deleted",
-                                    "Success!", JOptionPane.INFORMATION_MESSAGE);
-                            frame.dispose();
-                            SwingUtilities.invokeLater(new LoginFrame(socket));
-                        } else {
-                            JOptionPane.showMessageDialog(null, "Unable to delete account",
-                                    "Deletion Failure", JOptionPane.ERROR_MESSAGE);
+                    if (confirmDelete == 0) {
+                        writer.write("DELETE ACCOUNT");
+                        writer.println();
+                        writer.flush();
+
+                        writer.write(username);
+                        writer.println();
+                        writer.flush();
+
+                        serverResponse = reader.readLine();
+                        switch (serverResponse) {
+                            case "ACCOUNT DELETION SUCCESSFUL" -> {
+                                JOptionPane.showMessageDialog(null, "Your account was " +
+                                        "deleted successfully!", "Success", JOptionPane.INFORMATION_MESSAGE);
+                                customerFrame.dispose();
+                                SwingUtilities.invokeLater(new LoginFrame(socket));
+                            }
+                            case "FILE ERROR" -> {
+                                JOptionPane.showMessageDialog(null, "There was an error " +
+                                        "reading a file!", "Error", JOptionPane.ERROR_MESSAGE);
+                            }
                         }
-
                     }
-                } else if (e.getSource() == logout) {
-                    frame.dispose();
+                }
+
+                if (e.getSource() == logoutButton) {
+                    customerFrame.dispose();
                     SwingUtilities.invokeLater(new LoginFrame(socket));
                 }
-            } catch (Exception a) {
-                JOptionPane.showMessageDialog(null, "An error has occurred! (CuF)",
-                        "Error", JOptionPane.ERROR_MESSAGE);
-                a.printStackTrace();
+            } catch (IOException ioException) {
+                JOptionPane.showMessageDialog(null, "Connection lost!", "Error",
+                        JOptionPane.ERROR_MESSAGE);
             }
         }
     };
 
-    public static String selectOption(String prompt, String[] options, String title) {
+    public static String selectOption(String prompt, String[] options) {
         String selection;
         try {
-            selection = (String) JOptionPane.showInputDialog(null, prompt, title,
+            selection = (String) JOptionPane.showInputDialog(null, prompt, "Options",
                     JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         } catch (NullPointerException e) {
             return null;
