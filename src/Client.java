@@ -21,7 +21,7 @@ public class Client {
 
     public static void main(String[] args) {
         try {
-            Socket socket = new Socket("localhost", 4343);
+            Socket socket = new Socket("localhost", 3434);
             SwingUtilities.invokeLater(new LoginFrame(socket));
         } catch (IOException e) {
             JOptionPane.showMessageDialog(null, "Connection to the server could not be " +
