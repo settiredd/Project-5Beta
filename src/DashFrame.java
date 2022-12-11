@@ -118,7 +118,7 @@ public class DashFrame extends JFrame implements Runnable {
             ascending = true;
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Can't find your dashboard :(", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, "Can't find your dashboard :(\nPlease exit the dashboard", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
         JLabel dashboardPanel = new JLabel("              " + output);
