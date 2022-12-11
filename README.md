@@ -28,8 +28,8 @@ File Formatting
 
 **stores.txt**
 - stores.txt: stores.txt stores a list of all stores along with the owners of each store
-- stores.txt formatting: username;store name. 
-- EXAMPLE: sellerExample;ToysRUs
+- stores.txt formatting: storeName;owned by;username
+- EXAMPLE: ToysRUs;owned by;sellerSample
 
 **blockLists.txt & invisibleList.txt**
 - blockLists.txt & invisibleList.txt: stores who users are blocked by/invisible to/who users blocked.
