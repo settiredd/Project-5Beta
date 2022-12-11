@@ -15,11 +15,11 @@ import java.time.LocalDateTime;
  *
  */
 public class Server implements Runnable {
-    private static final File usersFile = new File("users.txt");
-    private static final File storesFile = new File("stores.txt");
-    private static final File invisibleListFile = new File("invisibleList.txt");
-    private static final File blockListFile = new File("blockList.txt");
-    private static final File conversationLogFile = new File("conversationLog.txt");
+    private static final File USERS_FILE = new File("users.txt");
+    private static final File STORES_FILE = new File("stores.txt");
+    private static final File INVISIBLE_LIST_FILE = new File("invisibleList.txt");
+    private static final File BLOCK_LIST_FILE = new File("blockList.txt");
+    private static final File CONVERSATION_LOG_FILE = new File("conversationLog.txt");
 
     Socket socket;
 
@@ -44,20 +44,20 @@ public class Server implements Runnable {
             PrintWriter writer = new PrintWriter(socket.getOutputStream());
 
             while (true) {
-                if (!usersFile.exists()) {
-                    usersFile.createNewFile();
+                if (!USERS_FILE.exists()) {
+                    USERS_FILE.createNewFile();
                 }
-                if (!storesFile.exists()) {
-                    storesFile.createNewFile();
+                if (!STORES_FILE.exists()) {
+                    STORES_FILE.createNewFile();
                 }
-                if (!invisibleListFile.exists()) {
-                    invisibleListFile.createNewFile();
+                if (!INVISIBLE_LIST_FILE.exists()) {
+                    INVISIBLE_LIST_FILE.createNewFile();
                 }
-                if (!blockListFile.exists()) {
-                    blockListFile.createNewFile();
+                if (!BLOCK_LIST_FILE.exists()) {
+                    BLOCK_LIST_FILE.createNewFile();
                 }
-                if (!conversationLogFile.exists()) {
-                    conversationLogFile.createNewFile();
+                if (!CONVERSATION_LOG_FILE.exists()) {
+                    CONVERSATION_LOG_FILE.createNewFile();
                 }
 
                 String command = reader.readLine();
@@ -109,7 +109,7 @@ public class Server implements Runnable {
                         String status = userInfoSplit[0];
 
                         if (status.equals("customer")) {
-                            ArrayList<String> fileContents = readFile(storesFile);
+                            ArrayList<String> fileContents = readFile(STORES_FILE);
 
                             if (fileContents != null) {
                                 if (fileContents.size() > 0) {
@@ -155,7 +155,7 @@ public class Server implements Runnable {
                                 writer.flush();
                             }
                         } else if (status.equals("seller")) {
-                            ArrayList<String> fileContents = readFile(usersFile);
+                            ArrayList<String> fileContents = readFile(USERS_FILE);
 
                             if (fileContents != null) {
                                 if (fileContents.size() > 0) {
@@ -214,7 +214,7 @@ public class Server implements Runnable {
                         boolean returnedResult = false;
 
                         if (status.equals("customer")) {
-                            ArrayList<String> fileContents = readFile(storesFile);
+                            ArrayList<String> fileContents = readFile(STORES_FILE);
 
                             if (fileContents != null) {
                                 if (fileContents.size() > 0) {
@@ -260,7 +260,7 @@ public class Server implements Runnable {
                                 writer.flush();
                             }
                         } else if (status.equals("seller")) {
-                            ArrayList<String> fileContents = readFile(usersFile);
+                            ArrayList<String> fileContents = readFile(USERS_FILE);
 
                             if (fileContents != null) {
                                 for (String line : fileContents) {
@@ -318,7 +318,7 @@ public class Server implements Runnable {
                         String infoToEdit = reader.readLine();
                         String newInfo = reader.readLine();
 
-                        ArrayList<String> fileContents = readFile(usersFile);
+                        ArrayList<String> fileContents = readFile(USERS_FILE);
 
                         if (fileContents != null) {
                             String userInfo = getUserInfo(username);
@@ -350,14 +350,14 @@ public class Server implements Runnable {
 
                                                     fileContents.set(fileContents.indexOf(line), newLine);
 
-                                                    rewriteFile(usersFile, fileContents);
+                                                    rewriteFile(USERS_FILE, fileContents);
                                                     break;
                                                 }
                                             }
 
                                             boolean fileError = false;
 
-                                            fileContents = readFile(invisibleListFile);
+                                            fileContents = readFile(INVISIBLE_LIST_FILE);
 
                                             if (fileContents != null) {
                                                 if (fileContents.size() > 0) {
@@ -366,7 +366,8 @@ public class Server implements Runnable {
                                                                 ";invisible to;");
 
                                                         if (splitLine[0].equals(username)) {
-                                                            String newLine = newInfo + ";invisible to;" + splitLine[1];
+                                                            String newLine = newInfo +
+                                                                    ";invisible to;" + splitLine[1];
 
                                                             fileContents.set(fileContents.indexOf(line), newLine);
                                                         }
@@ -378,13 +379,13 @@ public class Server implements Runnable {
                                                         }
                                                     }
 
-                                                    rewriteFile(invisibleListFile, fileContents);
+                                                    rewriteFile(INVISIBLE_LIST_FILE, fileContents);
                                                 }
                                             } else {
                                                 fileError = true;
                                             }
 
-                                            fileContents = readFile(blockListFile);
+                                            fileContents = readFile(BLOCK_LIST_FILE);
 
                                             if (fileContents != null) {
                                                 if (fileContents.size() > 0) {
@@ -403,13 +404,13 @@ public class Server implements Runnable {
                                                         }
                                                     }
 
-                                                    rewriteFile(blockListFile, fileContents);
+                                                    rewriteFile(BLOCK_LIST_FILE, fileContents);
                                                 }
                                             } else {
                                                 fileError = true;
                                             }
 
-                                            fileContents = readFile(conversationLogFile);
+                                            fileContents = readFile(CONVERSATION_LOG_FILE);
 
                                             if (fileContents != null) {
                                                 if (fileContents.size() > 0) {
@@ -434,7 +435,7 @@ public class Server implements Runnable {
                                                         }
                                                     }
 
-                                                    rewriteFile(conversationLogFile, fileContents);
+                                                    rewriteFile(CONVERSATION_LOG_FILE, fileContents);
                                                 }
                                             } else {
                                                 fileError = true;
@@ -443,7 +444,7 @@ public class Server implements Runnable {
                                             String status = userInfoSplit[0];
 
                                             if (status.equals("seller")) {
-                                                fileContents = readFile(storesFile);
+                                                fileContents = readFile(STORES_FILE);
 
                                                 if (fileContents != null) {
                                                     if (fileContents.size() > 0) {
@@ -451,13 +452,14 @@ public class Server implements Runnable {
                                                             String[] splitLine = line.split(";owned by;");
 
                                                             if (splitLine[1].equals(username)) {
-                                                                String newLine = splitLine[0] + ";owned by;" + newInfo;
-
-                                                                fileContents.set(fileContents.indexOf(line), newLine);
+                                                                String newLine = splitLine[0] +
+                                                                        ";owned by;" + newInfo;
+                                                                fileContents.set(fileContents.indexOf(line),
+                                                                        newLine);
                                                             }
                                                         }
 
-                                                        rewriteFile(storesFile, fileContents);
+                                                        rewriteFile(STORES_FILE, fileContents);
                                                     }
                                                 } else {
                                                     fileError = true;
@@ -495,7 +497,7 @@ public class Server implements Runnable {
 
                                                 fileContents.set(fileContents.indexOf(line), newLine);
 
-                                                rewriteFile(usersFile, fileContents);
+                                                rewriteFile(USERS_FILE, fileContents);
                                                 break;
                                             }
                                         }
@@ -527,12 +529,13 @@ public class Server implements Runnable {
                                         if (!newInfoTaken) {
                                             for (String line : fileContents) {
                                                 if (line.equals(userInfo)) {
-                                                    String newLine = userInfoSplit[0] + ";" + userInfoSplit[1] + ";" +
+                                                    String newLine = userInfoSplit[0] + ";"
+                                                            + userInfoSplit[1] + ";" +
                                                             userInfoSplit[2] + ";" + newInfo;
 
                                                     fileContents.set(fileContents.indexOf(line), newLine);
 
-                                                    rewriteFile(usersFile, fileContents);
+                                                    rewriteFile(USERS_FILE, fileContents);
                                                     break;
                                                 }
                                             }
@@ -557,7 +560,7 @@ public class Server implements Runnable {
                     case "DELETE ACCOUNT" -> {
                         String username = reader.readLine();
 
-                        ArrayList<String> fileContents = readFile(usersFile);
+                        ArrayList<String> fileContents = readFile(USERS_FILE);
 
                         if (fileContents != null) {
                             String userInfo = getUserInfo(username);
@@ -566,14 +569,14 @@ public class Server implements Runnable {
                                 if (line.equals(userInfo)) {
                                     fileContents.remove(line);
 
-                                    rewriteFile(usersFile, fileContents);
+                                    rewriteFile(USERS_FILE, fileContents);
                                     break;
                                 }
                             }
 
                             boolean fileError = false;
 
-                            fileContents = readFile(invisibleListFile);
+                            fileContents = readFile(INVISIBLE_LIST_FILE);
 
                             if (fileContents != null) {
                                 if (fileContents.size() > 0) {
@@ -596,13 +599,13 @@ public class Server implements Runnable {
                                         }
                                     }
 
-                                    rewriteFile(invisibleListFile, fileContents);
+                                    rewriteFile(INVISIBLE_LIST_FILE, fileContents);
                                 }
                             } else {
                                 fileError = true;
                             }
 
-                            fileContents = readFile(blockListFile);
+                            fileContents = readFile(BLOCK_LIST_FILE);
 
                             if (fileContents != null) {
                                 if (fileContents.size() > 0) {
@@ -625,13 +628,13 @@ public class Server implements Runnable {
                                         }
                                     }
 
-                                    rewriteFile(blockListFile, fileContents);
+                                    rewriteFile(BLOCK_LIST_FILE, fileContents);
                                 }
                             } else {
                                 fileError = true;
                             }
 
-                            fileContents = readFile(conversationLogFile);
+                            fileContents = readFile(CONVERSATION_LOG_FILE);
 
                             if (fileContents != null) {
                                 if (fileContents.size() > 0) {
@@ -661,7 +664,7 @@ public class Server implements Runnable {
                                         }
                                     }
 
-                                    rewriteFile(conversationLogFile, fileContents);
+                                    rewriteFile(CONVERSATION_LOG_FILE, fileContents);
                                 }
                             } else {
                                 fileError = true;
@@ -671,7 +674,7 @@ public class Server implements Runnable {
                             String status = userInfoSplit[0];
 
                             if (status.equals("seller")) {
-                                fileContents = readFile(storesFile);
+                                fileContents = readFile(STORES_FILE);
 
                                 if (fileContents != null) {
                                     if (fileContents.size() > 0) {
@@ -694,7 +697,7 @@ public class Server implements Runnable {
                                             }
                                         }
 
-                                        rewriteFile(storesFile, fileContents);
+                                        rewriteFile(STORES_FILE, fileContents);
                                     }
                                 } else {
                                     fileError = true;
@@ -720,7 +723,7 @@ public class Server implements Runnable {
                         String username = reader.readLine();
                         String userToBlock = reader.readLine();
 
-                        ArrayList<String> fileContents = readFile(usersFile);
+                        ArrayList<String> fileContents = readFile(USERS_FILE);
 
                         if (fileContents != null) {
                             boolean userFound = false;
@@ -763,7 +766,7 @@ public class Server implements Runnable {
                         String username = reader.readLine();
                         String userToCheck = reader.readLine();
 
-                        ArrayList<String> fileContents = readFile(usersFile);
+                        ArrayList<String> fileContents = readFile(USERS_FILE);
 
                         if (fileContents != null) {
                             boolean userFound = false;
@@ -1010,7 +1013,7 @@ public class Server implements Runnable {
     }
 
     public static String checkLogin(String usernameEntered, String passwordEntered) {
-        ArrayList<String> fileContents = readFile(usersFile);
+        ArrayList<String> fileContents = readFile(USERS_FILE);
 
         if (fileContents != null) {
             if (fileContents.size() > 0) {
@@ -1033,7 +1036,7 @@ public class Server implements Runnable {
 
     public synchronized String createAccount(String statusSelected, String usernameEntered,
                                              String passwordEntered, String emailEntered) {
-        ArrayList<String> fileContents = readFile(usersFile);
+        ArrayList<String> fileContents = readFile(USERS_FILE);
 
         if (fileContents != null) {
             boolean usernameTaken = false;
@@ -1064,7 +1067,7 @@ public class Server implements Runnable {
         }
 
         try {
-            PrintWriter pw = new PrintWriter(new FileOutputStream(usersFile, true));
+            PrintWriter pw = new PrintWriter(new FileOutputStream(USERS_FILE, true));
             pw.println(statusSelected + ";" + usernameEntered + ";" + passwordEntered + ";" + emailEntered);
             pw.close();
         } catch (FileNotFoundException e) {
@@ -1075,7 +1078,7 @@ public class Server implements Runnable {
     }
 
     public synchronized String createStore(String username, String storeNameEntered) {
-        ArrayList<String> fileContents = readFile(storesFile);
+        ArrayList<String> fileContents = readFile(STORES_FILE);
 
         if (fileContents != null) {
             if (fileContents.size() > 0) {
@@ -1092,7 +1095,7 @@ public class Server implements Runnable {
         }
 
         try {
-            PrintWriter pw = new PrintWriter(new FileOutputStream(storesFile, true));
+            PrintWriter pw = new PrintWriter(new FileOutputStream(STORES_FILE, true));
             pw.println(storeNameEntered + ";owned by;" + username);
             pw.close();
         } catch (FileNotFoundException e) {
@@ -1103,7 +1106,7 @@ public class Server implements Runnable {
     }
 
     public static String getUserInfo(String username) {
-        ArrayList<String> fileContents = readFile(usersFile);
+        ArrayList<String> fileContents = readFile(USERS_FILE);
 
         if (fileContents != null) {
             if (fileContents.size() > 0) {
@@ -1131,7 +1134,7 @@ public class Server implements Runnable {
                 if (!file.exists()) {
                     file.createNewFile();
 
-                    PrintWriter pw = new PrintWriter(new FileOutputStream(conversationLogFile, true));
+                    PrintWriter pw = new PrintWriter(new FileOutputStream(CONVERSATION_LOG_FILE, true));
                     pw.println(file.getName().substring(0, file.getName().indexOf('.')));
                     pw.close();
                 }
@@ -1152,7 +1155,7 @@ public class Server implements Runnable {
                 if (!file.exists()) {
                     file.createNewFile();
 
-                    PrintWriter pw = new PrintWriter(new FileOutputStream(conversationLogFile, true));
+                    PrintWriter pw = new PrintWriter(new FileOutputStream(CONVERSATION_LOG_FILE, true));
                     pw.println(file.getName().substring(0, file.getName().indexOf('.')));
                     pw.close();
                 }
@@ -1192,7 +1195,7 @@ public class Server implements Runnable {
     }
 
     public static boolean isVisible(String username, String userToCheck) {
-        ArrayList<String> fileContents = readFile(invisibleListFile);
+        ArrayList<String> fileContents = readFile(INVISIBLE_LIST_FILE);
 
         if (fileContents != null) {
             for (String line : fileContents) {
@@ -1206,7 +1209,7 @@ public class Server implements Runnable {
     }
 
     public static String getBlockStatus(String username, String userToCheck) {
-        ArrayList<String> fileContents = readFile(blockListFile);
+        ArrayList<String> fileContents = readFile(BLOCK_LIST_FILE);
 
         if (fileContents != null) {
             for (String line : fileContents) {
@@ -1239,14 +1242,14 @@ public class Server implements Runnable {
     }
 
     public synchronized String updateBlockStatus(String username, String userToCheck) {
-        ArrayList<String> fileContents = readFile(blockListFile);
+        ArrayList<String> fileContents = readFile(BLOCK_LIST_FILE);
 
         if (fileContents != null) {
             if (fileContents.size() > 0) {
                 for (String line : fileContents) {
                     if (line.equals(username + ";blocked;" + userToCheck)) {
                         fileContents.remove(line);
-                        rewriteFile(blockListFile, fileContents);
+                        rewriteFile(BLOCK_LIST_FILE, fileContents);
 
                         return "UNBLOCKED";
                     }
@@ -1254,7 +1257,7 @@ public class Server implements Runnable {
             }
 
             try {
-                PrintWriter pw = new PrintWriter(new FileOutputStream(blockListFile, true));
+                PrintWriter pw = new PrintWriter(new FileOutputStream(BLOCK_LIST_FILE, true));
                 pw.println(username + ";blocked;" + userToCheck);
                 pw.close();
             } catch (FileNotFoundException e) {
@@ -1268,14 +1271,14 @@ public class Server implements Runnable {
     }
 
     public synchronized String updateVisibility(String username, String userToCheck) {
-        ArrayList<String> fileContents = readFile(invisibleListFile);
+        ArrayList<String> fileContents = readFile(INVISIBLE_LIST_FILE);
 
         if (fileContents != null) {
             if (fileContents.size() > 0) {
                 for (String line : fileContents) {
                     if (line.equals(username + ";invisible to;" + userToCheck)) {
                         fileContents.remove(line);
-                        rewriteFile(invisibleListFile, fileContents);
+                        rewriteFile(INVISIBLE_LIST_FILE, fileContents);
 
                         return "VISIBLE";
                     }
@@ -1283,7 +1286,7 @@ public class Server implements Runnable {
             }
 
             try {
-                PrintWriter pw = new PrintWriter(new FileOutputStream(invisibleListFile, true));
+                PrintWriter pw = new PrintWriter(new FileOutputStream(INVISIBLE_LIST_FILE, true));
                 pw.println(username + ";invisible to;" + userToCheck);
                 pw.close();
             } catch (FileNotFoundException e) {
