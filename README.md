@@ -87,6 +87,7 @@ taken back to the LoginFrame and they cannot login with the previous account.
 - Logout button: takes user back to the LoginFrame.
 
 **CustomerFrame**
+- The customer frame has buttons handling each action a customer could take. 
 - Message button: seller gets the option to search for a store or to view a list of stores. Then depending on that
     they will be able to open the chat box with their selected user or be notifed that the person they want to message has
     either blocked/does not exist/or is a seller.
