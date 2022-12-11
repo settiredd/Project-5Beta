@@ -1,19 +1,25 @@
-import javax.swing.*;
 import java.io.*;
 import java.net.*;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.regex.Pattern;
 import java.time.LocalDateTime;
 
-public class Server implements Runnable {
-    private static final File usersFile = new File("users.txt");
-    private static final File storesFile = new File("stores.txt");
-    private static final File invisibleListFile = new File("invisibleList.txt");
-    private static final File blockListFile = new File("blockList.txt");
-    private static final File conversationLogFile = new File("conversationLog.txt");
+/**
+ * EZ Messenger
+ *
+ * Server for the program
+ *
+ * @author Shreeya Ettireddy
+ *
+ * @version 12/11/22
+ *
+ */
 
+public class Server implements Runnable {
+    private static final File USERS_FILE = new File("users.txt");
+    private static final File STORES_FILE = new File("stores.txt");
+    private static final File INVISIBLE_LIST_FILE = new File("invisibleList.txt");
+    private static final File BLOCK_LIST_FILE = new File("blockList.txt");
+    private static final File CONVERSATION_LOG_FILE = new File("conversationLog.txt");
     public static String username;
     public static String password;
     public static String email;
@@ -27,7 +33,7 @@ public class Server implements Runnable {
     }
 
     public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(4646);
+        ServerSocket serverSocket = new ServerSocket(2424);
 
         while (true) {
             Socket socket = serverSocket.accept();
@@ -43,9 +49,9 @@ public class Server implements Runnable {
 
         try {
             ArrayList<String> fileContents;
-            if (usersFile.exists()) {
+            if (USERS_FILE.exists()) {
                 if (user != null) {
-                    fileContents = readFile(usersFile);
+                    fileContents = readFile(USERS_FILE);
                     if (fileContents != null) {
                         if (fileContents.size() > 0) {
                             for (String line : fileContents) {
@@ -91,8 +97,8 @@ public class Server implements Runnable {
         String result = "";
         try {
             ArrayList<String> fileContents;
-            if (usersFile.exists()) {
-                fileContents = readFile(usersFile);
+            if (USERS_FILE.exists()) {
+                fileContents = readFile(USERS_FILE);
                 if (fileContents != null) {
                     if (fileContents.size() > 0) {
                         for (String line : fileContents) {
@@ -117,7 +123,7 @@ public class Server implements Runnable {
                 if (!userUsed && !emaUsed) {
                     result = "Yes";                     //when "Yes" this user is successfully created
 
-                    BufferedWriter userWriter = new BufferedWriter(new FileWriter(usersFile, true));
+                    BufferedWriter userWriter = new BufferedWriter(new FileWriter(USERS_FILE, true));
                     userWriter.write(stat + ";" + user + ";" + pass + ";" + ema);
                     userWriter.write("\n");
                     userWriter.close();                         //writes new user to users.txt file
@@ -141,20 +147,20 @@ public class Server implements Runnable {
     public void run() {
 
         try {
-            if (!usersFile.exists()) {
-                usersFile.createNewFile();      //creates users file if it doesn't already exist
+            if (!USERS_FILE.exists()) {
+                USERS_FILE.createNewFile();      //creates users file if it doesn't already exist
             }
-            if (!storesFile.exists()) {         //creates stores file if it doesn't already exist
-                storesFile.createNewFile();
+            if (!STORES_FILE.exists()) {         //creates stores file if it doesn't already exist
+                STORES_FILE.createNewFile();
             }
-            if (!blockListFile.exists()) {      //creates blocked file if it doesn't already exist
-                blockListFile.createNewFile();
+            if (!BLOCK_LIST_FILE.exists()) {      //creates blocked file if it doesn't already exist
+                BLOCK_LIST_FILE.createNewFile();
             }
-            if (!invisibleListFile.exists()) {      //creates invisibility file if it doesn't already exist
-                invisibleListFile.createNewFile();
+            if (!INVISIBLE_LIST_FILE.exists()) {      //creates invisibility file if it doesn't already exist
+                INVISIBLE_LIST_FILE.createNewFile();
             }
-            if (!conversationLogFile.exists()) {
-                conversationLogFile.createNewFile();
+            if (!CONVERSATION_LOG_FILE.exists()) {
+                CONVERSATION_LOG_FILE.createNewFile();
             }
 
             PrintWriter pw = new PrintWriter(socket.getOutputStream());
@@ -209,9 +215,9 @@ public class Server implements Runnable {
                             ArrayList<String> fileContents;
                             ArrayList<String> sendUsers = new ArrayList<>();
 
-                            if (usersFile.exists()) {
+                            if (USERS_FILE.exists()) {
                                 synchronized (o) {                      //so file reading is concurrent
-                                    fileContents = readFile(usersFile);
+                                    fileContents = readFile(USERS_FILE);
                                 }
                                 if (fileContents != null) {
                                     if (fileContents.size() > 0) {
@@ -259,13 +265,13 @@ public class Server implements Runnable {
                                     pw.flush();
                                 }
                             }
-                        } else if (stat.equals("customer")) {       //TODO
+                        } else if (stat.equals("customer")) {
                             ArrayList<String> storesContent;
                             ArrayList<String> sendStores = new ArrayList<>();
                             String storeSeller;
 
                             synchronized (o) {
-                                storesContent = readFile(storesFile);
+                                storesContent = readFile(STORES_FILE);
                             }
 
                             if (storesContent != null) {
@@ -274,7 +280,7 @@ public class Server implements Runnable {
                                         String[] splitLine = line.split(";");
                                         storeSeller = splitLine[0];
 
-                                        if (!isInvisible(storeSeller, user)) {
+                                        if (!isInvisible(user, storeSeller)) {
                                             sendStores.add(splitLine[1]);
                                         }
                                     }
@@ -329,9 +335,9 @@ public class Server implements Runnable {
                             } else {
                                 ArrayList<String> fileContents;
                                 boolean canMessage = false;
-                                if (usersFile.exists()) {
+                                if (USERS_FILE.exists()) {
                                     synchronized (o) {                      //so file reading is concurrent
-                                        fileContents = readFile(usersFile);
+                                        fileContents = readFile(USERS_FILE);
                                     }
                                     if (fileContents != null) {
                                         if (fileContents.size() > 0) {
@@ -354,7 +360,7 @@ public class Server implements Runnable {
                                                                 f2.createNewFile();
 
                                                                 BufferedWriter convoLogWriter = new BufferedWriter(new
-                                                                        FileWriter(conversationLogFile, true));
+                                                                        FileWriter(CONVERSATION_LOG_FILE, true));
                                                                 convoLogWriter.write(user + " & " + customerName
                                                                         + "\n");
                                                                 convoLogWriter.write(customerName + " & " + user
@@ -387,7 +393,7 @@ public class Server implements Runnable {
                             String storeSeller = "";
 
                             synchronized (o) {
-                                fileContents = readFile(storesFile);
+                                fileContents = readFile(STORES_FILE);
                             }
 
                             if (fileContents != null) {
@@ -400,7 +406,7 @@ public class Server implements Runnable {
                                             if (isBlocked(storeSeller, user)) {
                                                 blocked = true;
                                             }
-                                            if (isInvisible(storeSeller, user)) {
+                                            if (isInvisible(user, storeSeller)) {
                                                 invisible = true;
                                             }
                                         }
@@ -442,7 +448,7 @@ public class Server implements Runnable {
                                         f2.createNewFile();
 
                                         BufferedWriter convoLogWriter =
-                                                new BufferedWriter(new FileWriter(conversationLogFile, true));
+                                                new BufferedWriter(new FileWriter(CONVERSATION_LOG_FILE, true));
                                         convoLogWriter.write(user + " & " + storeSeller + "\n");
                                         convoLogWriter.write(storeSeller + " & " + user + '\n');
                                         convoLogWriter.close();
@@ -464,7 +470,7 @@ public class Server implements Runnable {
                         boolean canCreate = true;
 
                         synchronized (o) {
-                            fileContents = readFile(storesFile);        //concurrently reads file
+                            fileContents = readFile(STORES_FILE);        //concurrently reads file
                         }
 
                         if (fileContents != null) {             //does nothing is file contents are null
@@ -498,7 +504,7 @@ public class Server implements Runnable {
                         String newItem = bfr.readLine();        //gets what the user wants to change it to
                         ArrayList<String> fileContents;
                         synchronized (o) {                      //concurrently reads file
-                            fileContents = readFile(usersFile);
+                            fileContents = readFile(USERS_FILE);
                         }
 
                         boolean beingUsed = false;
@@ -513,7 +519,7 @@ public class Server implements Runnable {
                             case "Username":
                                 String userUsername = infoSplit[1];         //gets user's current username
 
-                                if (userUsername.equals(newItem)) {         //checks if user put their current username
+                                if (userUsername.equals(newItem)) {// if user put their current username
                                     same = true;
                                 } else {
                                     if (fileContents != null) {
@@ -533,17 +539,69 @@ public class Server implements Runnable {
                                     pw.println();
                                     pw.flush();
 
+                                    ArrayList<String> blockContents;
+                                    synchronized (o) {
+                                        blockContents = readFile(BLOCK_LIST_FILE);
+                                    }
+
+                                    if (blockContents != null) {
+                                        if (blockContents.size() > 0) {
+                                            for (int i = 0; i < blockContents.size(); i++) {
+                                                String[] split = blockContents.get(i).split(";");
+
+                                                if (split[0].equals(userUsername)) {
+                                                    blockContents.set(i, newItem + ";blocked;" + split[2]);
+                                                } else if (split[2].equals(userUsername)) {
+                                                    blockContents.set(i, split[0] + ";blocked;" + newItem);
+                                                }
+                                            }
+
+                                            BufferedWriter blockWriter = new
+                                                    BufferedWriter(new FileWriter(BLOCK_LIST_FILE, false));
+                                            for (int i = 0; i < blockContents.size(); i++) {
+                                                blockWriter.write(blockContents.get(i) + "\n");
+                                            }
+                                            blockWriter.close();
+                                        }
+                                    }
+
+                                    ArrayList<String> invisibleContents;
+                                    synchronized (o) {
+                                        invisibleContents = readFile(INVISIBLE_LIST_FILE);
+                                    }
+
+                                    if (invisibleContents != null) {
+                                        if (invisibleContents.size() > 0) {
+                                            for (int i = 0; i < invisibleContents.size(); i++) {
+                                                String[] split = invisibleContents.get(i).split(";");
+
+                                                if (split[0].equals(userUsername)) {
+                                                    invisibleContents.set(i, newItem + ";invisible to;" + split[2]);
+                                                } else if (split[2].equals(userUsername)) {
+                                                    invisibleContents.set(i, split[0] + ";invisible to;" + newItem);
+                                                }
+                                            }
+
+                                            BufferedWriter invisibleWriter = new
+                                                    BufferedWriter(new FileWriter(INVISIBLE_LIST_FILE, false));
+                                            for (int i = 0; i < invisibleContents.size(); i++) {
+                                                invisibleWriter.write(invisibleContents.get(i) + "\n");
+                                            }
+                                            invisibleWriter.close();
+                                        }
+                                    }
+
+
                                     for (int i = 0; i < fileContents.size(); i++) {
                                         if (fileContents.get(i).equals(getUserInfo(user))) {
-                                            fileContents.remove(i);
-
-                                            fileContents.add(getUserInfo(user).replace(infoSplit[1], newItem));
+                                            fileContents.set(i, infoSplit[0] + ";" + newItem + ";" + infoSplit[2] +
+                                                    ";" + infoSplit[3]);
                                         }
                                     }
 
                                     synchronized (o) {              //concurrently writes to file
                                         BufferedWriter userWriter =
-                                                new BufferedWriter(new FileWriter(usersFile, false));
+                                                new BufferedWriter(new FileWriter(USERS_FILE, false));
                                         for (int i = 0; i < fileContents.size(); i++) {
                                             userWriter.write(fileContents.get(i) + "\n");
                                         }
@@ -553,7 +611,7 @@ public class Server implements Runnable {
                                     ArrayList<String> convoListContent;
 
                                     synchronized (o) {
-                                        convoListContent = readFile(conversationLogFile);
+                                        convoListContent = readFile(CONVERSATION_LOG_FILE);
                                     }
 
                                     if (convoListContent != null) {
@@ -581,7 +639,7 @@ public class Server implements Runnable {
 
                                             synchronized (o) {
                                                 BufferedWriter convoLogWriter = new BufferedWriter
-                                                        (new FileWriter(conversationLogFile, false));
+                                                        (new FileWriter(CONVERSATION_LOG_FILE, false));
                                                 for (int i = 0; i < convoListContent.size(); i++) {
                                                     convoLogWriter.write(convoListContent.get(i) + "\n");
                                                 }
@@ -594,7 +652,7 @@ public class Server implements Runnable {
                                     if (stat.equals("seller")) {
                                         synchronized (o) {
                                             ArrayList<String> storeList;
-                                            storeList = readFile(storesFile);
+                                            storeList = readFile(STORES_FILE);
 
                                             if (storeList != null) {
                                                 if (storeList.size() > 0) {
@@ -614,7 +672,7 @@ public class Server implements Runnable {
                                                     }
 
                                                     BufferedWriter storeWriter = new
-                                                            BufferedWriter(new FileWriter(storesFile, false));
+                                                            BufferedWriter(new FileWriter(STORES_FILE, false));
                                                     for (String line2 : storeList) {
                                                         storeWriter.write(line2 + "\n");
                                                     }
@@ -637,12 +695,12 @@ public class Server implements Runnable {
                             case "Password":
                                 String userPassword = infoSplit[2];         //gets user's current password
 
-                                if (userPassword.equals(newItem)) {         //checks if user put their current password
+                                if (userPassword.equals(newItem)) { //if user put their current password
                                     same = true;
                                 }
 
                                 if (same) {
-                                    pw.write("Same");    //tells user that they input their current password
+                                    pw.write("Same"); //tells user that they input their current password
                                     pw.println();
                                     pw.flush();
                                 } else {
@@ -652,14 +710,13 @@ public class Server implements Runnable {
 
                                     for (int i = 0; i < fileContents.size(); i++) {
                                         if (fileContents.get(i).equals(getUserInfo(user))) {
-                                            fileContents.remove(i);
-
-                                            fileContents.add(getUserInfo(user).replace(infoSplit[2], newItem));
+                                            fileContents.set(i, infoSplit[0] + ";" + infoSplit[1] + ";" + newItem +
+                                                    ";" + infoSplit[3]);
                                         }
                                     }
                                     synchronized (o) {              //concurrently writes to file
                                         BufferedWriter passWriter =
-                                                new BufferedWriter(new FileWriter(usersFile, false));
+                                                new BufferedWriter(new FileWriter(USERS_FILE, false));
                                         for (int i = 0; i < fileContents.size(); i++) {
                                             passWriter.write(fileContents.get(i) + "\n");
                                         }
@@ -694,14 +751,14 @@ public class Server implements Runnable {
 
                                     for (int i = 0; i < fileContents.size(); i++) {
                                         if (fileContents.get(i).equals(getUserInfo(user))) {
-                                            fileContents.remove(i);
-
-                                            fileContents.add(getUserInfo(user).replace(infoSplit[3], newItem));
+                                            fileContents.set(i, infoSplit[0] + ";" + infoSplit[1] + ";" +
+                                                    infoSplit[2] +
+                                                    ";" + newItem);
                                         }
                                     }
                                     synchronized (o) {              //concurrently writes to file
                                         BufferedWriter emailWriter =
-                                                new BufferedWriter(new FileWriter(usersFile, false));
+                                                new BufferedWriter(new FileWriter(USERS_FILE, false));
                                         for (int i = 0; i < fileContents.size(); i++) {
                                             emailWriter.write(fileContents.get(i) + "\n");
                                         }
@@ -725,7 +782,7 @@ public class Server implements Runnable {
                         ArrayList<String> fileContents;
                         boolean deleted = false;
                         synchronized (o) {
-                            fileContents = readFile(usersFile);
+                            fileContents = readFile(USERS_FILE);
                         }
 
                         for (int i = 0; i < fileContents.size(); i++) {
@@ -737,7 +794,7 @@ public class Server implements Runnable {
 
                         synchronized (o) {              //concurrently writes to file
                             BufferedWriter usersWriter =
-                                    new BufferedWriter(new FileWriter(usersFile, false));
+                                    new BufferedWriter(new FileWriter(USERS_FILE, false));
                             for (int i = 0; i < fileContents.size(); i++) {
                                 usersWriter.write(fileContents.get(i) + "\n");
                             }
@@ -764,8 +821,8 @@ public class Server implements Runnable {
                         ArrayList<String> blockContents;
 
                         synchronized (o) {
-                            usersContents = readFile(usersFile);
-                            blockContents = readFile(blockListFile);
+                            usersContents = readFile(USERS_FILE);
+                            blockContents = readFile(BLOCK_LIST_FILE);
                         }
 
                         for (String line : usersContents) {
@@ -801,7 +858,7 @@ public class Server implements Runnable {
 
                             synchronized (o) {              //concurrently writes in file
                                 BufferedWriter blockWriter =
-                                        new BufferedWriter(new FileWriter(blockListFile, true));
+                                        new BufferedWriter(new FileWriter(BLOCK_LIST_FILE, true));
                                 blockWriter.write(user + ";blocked;" + blocked + "\n");
                                 blockWriter.close();
                             }
@@ -817,8 +874,8 @@ public class Server implements Runnable {
                         ArrayList<String> invisibleContents;
 
                         synchronized (o) {
-                            usersContents = readFile(usersFile);
-                            invisibleContents = readFile(invisibleListFile);
+                            usersContents = readFile(USERS_FILE);
+                            invisibleContents = readFile(INVISIBLE_LIST_FILE);
                         }
 
                         for (String line : usersContents) {
@@ -854,7 +911,7 @@ public class Server implements Runnable {
 
                             synchronized (o) {              //concurrently writes in file
                                 BufferedWriter invisibleWriter =
-                                        new BufferedWriter(new FileWriter(invisibleListFile, true));
+                                        new BufferedWriter(new FileWriter(INVISIBLE_LIST_FILE, true));
                                 invisibleWriter.write(user + ";invisible to;" + invisibleTo + "\n");
                                 invisibleWriter.close();
                             }
@@ -919,8 +976,7 @@ public class Server implements Runnable {
                                     String receiver = userSplit[2];
 
                                     if (sender.equals(user)) {
-                                        String[] messageSplit = line.split(":");
-                                        String message = messageSplit[3];
+                                        String message = line;
                                         userMessages.add(message);
                                     }
                                 }
@@ -946,8 +1002,15 @@ public class Server implements Runnable {
                                             String messageToDelete = bfr.readLine();
                                             for (int i = 0; i < userMessages.size(); i++) {
                                                 if (userMessages.get(i).equals(messageToDelete)) {
+                                                    for (int j = 0; j < fileContents.size(); j++) {
+                                                        if (fileContents.get(j).equals(userMessages.get(i))) {
+                                                            fileContents.remove(j);
+                                                            break;
+                                                        }
+                                                    }
+
                                                     userMessages.remove(i);
-                                                    fileContents.remove(i);
+
                                                     break;
                                                 }
                                             }
@@ -992,7 +1055,7 @@ public class Server implements Runnable {
                         String recipient = bfr.readLine();
                         ArrayList<String> fileContents1;            //user to recipient fileContents
                         ArrayList<String> fileContents2;            //recipient to user fileContents
-                        ArrayList<String> userMessages = new ArrayList<>();
+                        ArrayList<String> sendMessages = new ArrayList<>();
 
                         synchronized (o) {
                             fileContents1 = readFile(new File(user + " & " + recipient));
@@ -1009,20 +1072,18 @@ public class Server implements Runnable {
                                     String receiver = userSplit[2];
 
                                     if (sender.equals(user)) {
-                                        String[] messageSplit = line.split(":");
-                                        String message = messageSplit[3];
-                                        userMessages.add(message);
+                                        sendMessages.add(line);
                                     }
                                 }
 
-                                if (userMessages != null) {
-                                    if (userMessages.size() > 0) {
+                                if (sendMessages != null) {
+                                    if (sendMessages.size() > 0) {
                                         pw.write("Yes");
                                         pw.println();
                                         pw.flush();
 
-                                        for (int i = 0; i < userMessages.size(); i++) {
-                                            pw.write(userMessages.get(i));
+                                        for (int i = 0; i < sendMessages.size(); i++) {
+                                            pw.write(sendMessages.get(i));
                                             pw.println();
                                             pw.flush();
                                         }
@@ -1037,28 +1098,35 @@ public class Server implements Runnable {
                                             String messageToEdit = bfr.readLine();    //message the user wants to edit
                                             String newMessage = bfr.readLine();     //thing that message is changed to
 
-                                            for (int i = 0; i < userMessages.size(); i++) {
-                                                if (userMessages.get(i).equals(messageToEdit)) {
-                                                    userMessages.set(i, newMessage);
+                                            for (int i = 0; i < sendMessages.size(); i++) {
+                                                if (sendMessages.get(i).equals(messageToEdit)) {
+                                                    String changeThisMessage = sendMessages.get(i);
+                                                    String changedTo = "";
 
-                                                    String messageLine = fileContents1.get(i);
-                                                    String[] splitMessage = messageLine.split(":");
+                                                    for (int j = 0; j < fileContents1.size(); j++) {
+                                                        if (fileContents1.get(j).equals(sendMessages.get(i))) {
+                                                            String[] split = fileContents1.get(j).split(":");
+                                                            fileContents1.set(j, split[0] + ":" + split[1] + ":" +
+                                                                    split[2] + ":" +
+                                                                    newMessage);
+
+                                                            sendMessages.set(i, fileContents1.get(j));
+                                                            changedTo = sendMessages.get(i);
+                                                            break;
+                                                        }
+
+                                                    }
 
                                                     if (fileContents2 != null) {
                                                         if (fileContents2.size() > 0) {
                                                             for (int j = 0; j < fileContents2.size(); j++) {
-                                                                if (fileContents2.get(j).equals(messageLine)) {
-                                                                    fileContents2.set(j, splitMessage[0] + ":" +
-                                                                            splitMessage[1] + ":" + splitMessage[2] +
-                                                                            ":" + newMessage);
+                                                                if (fileContents2.get(j).equals(changeThisMessage)) {
+                                                                    fileContents2.set(j, changedTo);
                                                                     break;
                                                                 }
                                                             }
                                                         }
                                                     }
-
-                                                    fileContents1.set(i, splitMessage[0] + ":" + splitMessage[1] + ":" +
-                                                            splitMessage[2] + ":" + newMessage);
                                                     break;
                                                 }
                                             }
@@ -1075,7 +1143,7 @@ public class Server implements Runnable {
 
                                             synchronized (o) {
                                                 BufferedWriter file2Writer = new BufferedWriter(new
-                                                        FileWriter(recipient + " & " + user));
+                                                        FileWriter(recipient + " & " + user, false));
                                                 for (int x = 0; x < fileContents2.size(); x++) {
                                                     file2Writer.write(fileContents2.get(x) + "\n");
                                                 }
@@ -1120,8 +1188,8 @@ public class Server implements Runnable {
     synchronized String getUserInfo(String user) {
         String userInfo = "";
         try {
-            if (usersFile.exists()) {
-                BufferedReader bfr = new BufferedReader(new FileReader(usersFile));
+            if (USERS_FILE.exists()) {
+                BufferedReader bfr = new BufferedReader(new FileReader(USERS_FILE));
                 String line;
 
                 while ((line = bfr.readLine()) != null) {
@@ -1143,13 +1211,15 @@ public class Server implements Runnable {
             File f = new File(user + " & " + messageTo);
             File f2 = new File(messageTo + " & " + user);
 
+            String time = String.valueOf(LocalDateTime.now());
+
             BufferedWriter bw = new BufferedWriter(new FileWriter(f, true));
-            bw.write(user + " to " + messageTo + " @" + String.valueOf(LocalDateTime.now()) + " :" + message +
+            bw.write(user + " to " + messageTo + " @" + time + " :" + message +
                     "\n");
             bw.close();
 
             BufferedWriter bw2 = new BufferedWriter(new FileWriter(f2, true));
-            bw2.write(user + " to " + messageTo + " @" + String.valueOf(LocalDateTime.now()) + " :" + message +
+            bw2.write(user + " to " + messageTo + " @" + time + " :" + message +
                     "\n");
             bw2.close();
 
@@ -1160,8 +1230,8 @@ public class Server implements Runnable {
 
     synchronized void writeStore(String user, String storeName) {
         try {
-            if (storesFile.exists()) {
-                BufferedWriter bfr = new BufferedWriter(new FileWriter(storesFile, true));
+            if (STORES_FILE.exists()) {
+                BufferedWriter bfr = new BufferedWriter(new FileWriter(STORES_FILE, true));
                 bfr.write(user + ";" + storeName + "\n");
                 bfr.close();
             }
@@ -1186,8 +1256,8 @@ public class Server implements Runnable {
     }
 
     public static boolean isInvisible(String user, String userToCheck) {
-        if (invisibleListFile.exists()) {
-            ArrayList<String> fileContents = readFile(invisibleListFile);
+        if (INVISIBLE_LIST_FILE.exists()) {
+            ArrayList<String> fileContents = readFile(INVISIBLE_LIST_FILE);
             if (fileContents != null) {
                 for (String line : fileContents) {
                     if (line.equals(userToCheck + ";invisible to;" + user)) {
@@ -1200,8 +1270,8 @@ public class Server implements Runnable {
     }
 
     public static boolean isBlocked(String user, String userToCheck) {
-        if (blockListFile.exists()) {
-            ArrayList<String> fileContents = readFile(blockListFile);
+        if (BLOCK_LIST_FILE.exists()) {
+            ArrayList<String> fileContents = readFile(BLOCK_LIST_FILE);
             if (fileContents != null) {
                 for (String line : fileContents) {
                     if (line.equals(userToCheck + ";blocked;" + user)) {

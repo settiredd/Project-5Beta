@@ -9,13 +9,23 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+/**
+ * EZ Messenger
+ *
+ * Creates a frame for customer users
+ *
+ * @author Shreeya Ettireddy
+ *
+ * @version 12/11/22
+ *
+ */
+
 public class CustomerFrame extends JFrame implements Runnable {
     Socket socket;
     String username;
     JFrame frame;
     JButton message;
     JButton block;
-    JButton dash;
     JButton edit;
     JButton delete;
     JButton logout;
@@ -40,9 +50,6 @@ public class CustomerFrame extends JFrame implements Runnable {
         block = new JButton("Block a Seller");
         block.addActionListener(actionListener);
 
-        dash = new JButton("View Dashboard");
-        dash.addActionListener(actionListener);
-
         edit = new JButton("Edit Account");
         edit.addActionListener(actionListener);
 
@@ -66,15 +73,12 @@ public class CustomerFrame extends JFrame implements Runnable {
         frame.add(block, gbc);
 
         gbc.gridy = 3;
-        frame.add(dash, gbc);
-
-        gbc.gridy = 4;
         frame.add(edit, gbc);
 
-        gbc.gridy = 5;
+        gbc.gridy = 4;
         frame.add(delete, gbc);
 
-        gbc.gridy = 6;
+        gbc.gridy = 5;
         frame.add(logout, gbc);
 
         frame.setVisible(true);
@@ -133,9 +137,9 @@ public class CustomerFrame extends JFrame implements Runnable {
                                         JOptionPane.showMessageDialog(null, "This store doesn't " +
                                                 "exist", "Not Existing", JOptionPane.ERROR_MESSAGE);
                                     }
-                                    case "Blocked" -> {
+                                    case "blocked" -> {
                                         JOptionPane.showMessageDialog(null, "This store seller has"
-                                                        + " blocked you/You have blocked this store seller",
+                                                        + " Blocked you/You have blocked this store seller",
                                                 "Block Error", JOptionPane.ERROR_MESSAGE);
                                     }
                                     case "Yes" -> {
@@ -318,8 +322,6 @@ public class CustomerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == dash) {
-
                 } else if (e.getSource() == edit) {
                     String[] editOptions = {"Username", "Password", "Email"};   //user chooses what they want to edit
                     String editSelection = selectOption("What would you like to edit", editOptions,
@@ -454,6 +456,7 @@ public class CustomerFrame extends JFrame implements Runnable {
             } catch (Exception a) {
                 JOptionPane.showMessageDialog(null, "An error has occurred! (CuF)",
                         "Error", JOptionPane.ERROR_MESSAGE);
+                a.printStackTrace();
             }
         }
     };

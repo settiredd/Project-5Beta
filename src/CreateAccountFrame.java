@@ -8,6 +8,17 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.regex.Pattern;
 
+/**
+ * EZ Messenger
+ *
+ * Creates a frame users to create an account
+ *
+ * @author Shreeya Ettireddy
+ *
+ * @version 12/11/22
+ *
+ */
+
 public class CreateAccountFrame extends JFrame implements Runnable {
     Socket socket;
     String username;
@@ -131,26 +142,26 @@ public class CreateAccountFrame extends JFrame implements Runnable {
 
                         /** check username before sending to server **/
                         if (checkUsername.length() >= 8 && !checkUsername.contains(" ")
-                                && !checkUsername.contains(";"))  {
+                                && !checkUsername.contains(";")) {
                             goodUsername = true;
                             username = checkUsername;
                         } else {
                             JOptionPane.showMessageDialog(null, "Create a valid username " +
-                                            "(at least 8 characters, no semicolons or spaces).",
-                                    "Invalid username", JOptionPane.ERROR_MESSAGE);
+                                            "(at least 8 characters, no semicolons or spaces).", "Invalid username",
+                                    JOptionPane.ERROR_MESSAGE);
                             userText.setText("");
                             goodUsername = false;
                         }
 
                         /** check password before sending to server **/
                         if (checkPassword.length() >= 8 && !checkPassword.contains(" ")
-                                && !checkPassword.contains(";"))  {
+                                && !checkPassword.contains(";")) {
                             goodPassword = true;
                             password = checkPassword;
                         } else {
                             JOptionPane.showMessageDialog(null, "Create a valid password " +
-                                            "(at least 8 characters, no semicolons or spaces).",
-                                    "Invalid password", JOptionPane.ERROR_MESSAGE);
+                                            "(at least 8 characters, no semicolons or spaces).", "Invalid password",
+                                    JOptionPane.ERROR_MESSAGE);
                             passText.setText("");
                             goodPassword = false;
                         }

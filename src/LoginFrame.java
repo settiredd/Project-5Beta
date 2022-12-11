@@ -3,10 +3,20 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
-import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+
+/**
+ * EZ Messenger
+ *
+ * Frame where users can choose to login or be redirected to create an account
+ *
+ * @author Shreeya Ettireddy
+ *
+ * @version 12/11/22
+ *
+ */
 
 public class LoginFrame extends JFrame implements Runnable {
     Socket socket;
@@ -16,6 +26,7 @@ public class LoginFrame extends JFrame implements Runnable {
     JTextField usernameText;
     JPasswordField passwordText;
     JFrame frame;
+
     public LoginFrame(Socket socket) {
         this.socket = socket;
     }
@@ -116,8 +127,6 @@ public class LoginFrame extends JFrame implements Runnable {
                                         "found (LF 107)", "Unknown Status", JOptionPane.ERROR_MESSAGE);
                             }
 
-                            //bfr.close();
-                            //pw.close();
                             frame.dispose();
 
                         } else if (checkLogin.equals("No")) {   //login failure
@@ -141,12 +150,12 @@ public class LoginFrame extends JFrame implements Runnable {
     public static String selectOption(String prompt, String[] options) {
         String selection;
         try {
-            selection = (String) JOptionPane.showInputDialog(null, prompt, "Options",
+            selection = (String) JOptionPane.showInputDialog(null, prompt,
+                    "Welcome to EZ Messenger!",
                     JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
         } catch (NullPointerException e) {
             return null;
         }
         return selection;
     }
-
 }

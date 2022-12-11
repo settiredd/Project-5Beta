@@ -9,6 +9,17 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
+/**
+ * EZ Messenger
+ *
+ * Creates a frame for seller users
+ *
+ * @author Shreeya Ettireddy
+ *
+ * @version 12/11/22
+ *
+ */
+
 public class SellerFrame extends JFrame implements Runnable {
     Socket socket;
     String username;
@@ -16,10 +27,10 @@ public class SellerFrame extends JFrame implements Runnable {
     JButton store;
     JButton message;
     JButton block;
-    JButton dash;
     JButton edit;
     JButton delete;
     JButton logout;
+    JButton dashboard;
 
 
     public SellerFrame(Socket socket, String username) {
@@ -44,9 +55,6 @@ public class SellerFrame extends JFrame implements Runnable {
         block = new JButton("Block a Customer");
         block.addActionListener(actionListener);
 
-        dash = new JButton("View Dashboard");
-        dash.addActionListener(actionListener);
-
         edit = new JButton("Edit Account");
         edit.addActionListener(actionListener);
 
@@ -55,6 +63,9 @@ public class SellerFrame extends JFrame implements Runnable {
 
         logout = new JButton("Logout");
         logout.addActionListener(actionListener);
+
+        dashboard = new JButton("Dashboard");
+        dashboard.addActionListener(actionListener);
 
         gbc.gridx = 0;
         gbc.gridy = 0;
@@ -73,10 +84,10 @@ public class SellerFrame extends JFrame implements Runnable {
         frame.add(block, gbc);
 
         gbc.gridy = 4;
-        frame.add(dash, gbc);
+        frame.add(edit, gbc);
 
         gbc.gridy = 5;
-        frame.add(edit, gbc);
+        frame.add(dashboard, gbc);
 
         gbc.gridy = 6;
         frame.add(delete, gbc);
@@ -256,7 +267,6 @@ public class SellerFrame extends JFrame implements Runnable {
                         }
                     }
                 } else if (e.getSource() == block) {
-                    //TODO
                     String[] options = {"Block", "Invisible"};
                     String choice = String.valueOf(JOptionPane.showOptionDialog(null, "Do you "
                                     + "want to block a customer or become invisible to them?",
@@ -348,12 +358,7 @@ public class SellerFrame extends JFrame implements Runnable {
                             }
                         }
                     }
-                } else if (e.getSource() == dash) {
-                    frame.dispose();
-                    SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
-
                 } else if (e.getSource() == edit) {
-                    //TODO
                     String[] editOptions = {"Username", "Password", "Email"};   //user chooses what they want to edit
                     String editSelection = selectOption("What would you like to edit", editOptions,
                             "Edit Account");
@@ -484,6 +489,9 @@ public class SellerFrame extends JFrame implements Runnable {
                 } else if (e.getSource() == logout) {
                     frame.dispose();
                     SwingUtilities.invokeLater(new LoginFrame(socket));
+                } else if (e.getSource() == dashboard) {
+                    frame.dispose();
+                    SwingUtilities.invokeLater(new DashFrame(socket, username, "seller"));
                 }
             } catch (Exception a) {
                 JOptionPane.showMessageDialog(null, "An error has occurred! (SF)",

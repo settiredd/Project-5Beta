@@ -6,8 +6,18 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.time.LocalDateTime;
 import java.util.ArrayList;
+
+/**
+ * EZ Messenger
+ *
+ * Creates the ChatFrame where users chat in
+ *
+ * @author Shreeya Ettireddy
+ *
+ * @version 12/11/22
+ *
+ */
 
 public class ChatFrame extends JFrame implements Runnable {
     Socket socket;
@@ -21,8 +31,6 @@ public class ChatFrame extends JFrame implements Runnable {
     JButton edit;
     JButton delete;
     JTextField messageText;
-    JButton sendFile;
-    JButton export;
     JButton refresh;
     JTextArea chatBox;
 
@@ -50,15 +58,13 @@ public class ChatFrame extends JFrame implements Runnable {
             chatBox = new JTextArea();
             chatBox.setEditable(false);
             JScrollPane scroll = new JScrollPane(chatBox, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-                    JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+                    JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
             exit = new JButton("Exit Chat");
             exit.addActionListener(actionListener);
 
             send = new JButton("Send");
             send.addActionListener(actionListener);
-            sendFile = new JButton("Send txt File");
-            sendFile.addActionListener(actionListener);
 
             edit = new JButton("Edit Message");
             edit.addActionListener(actionListener);
@@ -66,25 +72,20 @@ public class ChatFrame extends JFrame implements Runnable {
             delete = new JButton("Delete Message");
             delete.addActionListener(actionListener);
 
-            export = new JButton("Export conversation");
-            export.addActionListener(actionListener);
-
             refresh = new JButton("Refresh Chat");
             refresh.addActionListener(actionListener);
 
-            messageText = new JTextField(20);
+            messageText = new JTextField( 20);
 
             JPanel bottom = new JPanel();
             bottom.add(send);
             bottom.add(messageText);
-            bottom.add(sendFile);
             bottom.add(refresh);
 
             JPanel top = new JPanel();
             top.add(exit);
             top.add(edit);
             top.add(delete);
-            top.add(export);
 
             frame.add(scroll, BorderLayout.CENTER);
             frame.add(bottom, BorderLayout.SOUTH);
@@ -166,11 +167,8 @@ public class ChatFrame extends JFrame implements Runnable {
                             JOptionPane.showMessageDialog(null, "Message could not be sent",
                                     "ERROR", JOptionPane.ERROR_MESSAGE);
                         } else {
-                            String prevChat = chatBox.getText();
-                            prevChat = prevChat + "\n" + username + " to " + recipient + " @" +
-                                    String.valueOf(LocalDateTime.now()) + " :" + messageText.getText();
-                            chatBox.setText(prevChat);
-                            messageText.setText("");
+                            JOptionPane.showMessageDialog(null, "Refresh to see your message " +
+                                    "updates", "Please Refresh", JOptionPane.INFORMATION_MESSAGE);
 
                         }
                     }
@@ -257,7 +255,7 @@ public class ChatFrame extends JFrame implements Runnable {
                                                     "deleted your message. Please refresh to see updated chat",
                                             "Success", JOptionPane.INFORMATION_MESSAGE);
                                 } else {
-                                    JOptionPane.showMessageDialog(null, "Something went " +
+                                    JOptionPane.showMessageDialog(null , "Something went " +
                                                     "wrong in deleting your message.", "Deletion failure",
                                             JOptionPane.ERROR_MESSAGE);
                                 }
@@ -357,11 +355,11 @@ public class ChatFrame extends JFrame implements Runnable {
 
                                     if (editResponse.equals("Yes")) {
                                         JOptionPane.showMessageDialog(null, "Successfully " +
-                                                        "edited this message. Please refresh to see updated chat",
+                                                        "edited your message. Please refresh to see updated chat",
                                                 "Success", JOptionPane.INFORMATION_MESSAGE);
                                     } else {
-                                        JOptionPane.showMessageDialog(null, "Something went " +
-                                                        "wrong in editing this message.", "Edit failure",
+                                        JOptionPane.showMessageDialog(null , "Something went " +
+                                                        "wrong in editing your message.", "Edit failure",
                                                 JOptionPane.ERROR_MESSAGE);
                                     }
                                 }
@@ -372,6 +370,7 @@ public class ChatFrame extends JFrame implements Runnable {
             } catch (Exception a) {
                 JOptionPane.showMessageDialog(null, "An issue occurred (ChF)", "Error",
                         JOptionPane.ERROR_MESSAGE);
+                a.printStackTrace();
             }
         }
     };
@@ -386,4 +385,5 @@ public class ChatFrame extends JFrame implements Runnable {
         }
         return selection;
     }
+
 }
