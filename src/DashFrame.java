@@ -7,6 +7,17 @@ import java.io.FileReader;
 import java.net.Socket;
 import java.util.*;
 
+/**
+ * EZ Messenger -- SellerFrame
+ *
+ * Creates a dashboard for sellers
+ *
+ * @author Shreeya Ettireddy, Ben Sitzman, Caden Edam, lab sec L29
+ *
+ * @version 12/11/22
+ *
+ */
+
 public class DashFrame extends JFrame implements Runnable {
     Socket socket;
     String username;
@@ -44,11 +55,11 @@ public class DashFrame extends JFrame implements Runnable {
         String output = "";
 
         try {
-            boolean ascending = false;      // Accounts for sorting
+            ascending = false;      // Accounts for sorting
             BufferedReader br = new BufferedReader(new FileReader(username + "messages.txt"));
             String line = "";
 
-            while (line!= null) {       // This loop iterates through every store the user has
+            while (line != null) {       // This loop iterates through every store the user has
                 int count = 0;
                 int maxCount = 0;
                 String word = null;
@@ -79,7 +90,8 @@ public class DashFrame extends JFrame implements Runnable {
                     }
                 }
 
-                for (Map.Entry<String, Integer> entry : data.entrySet()) {      // Adds customer message values to ArrayList & sorts them
+                for (Map.Entry<String, Integer> entry : data.entrySet()) {
+                    // Adds customer message values to ArrayList & sorts them
                     numMessages.add(entry.getValue());
                 }
                 Collections.sort(numMessages);
@@ -94,7 +106,7 @@ public class DashFrame extends JFrame implements Runnable {
 
                 for (int i = 0; i < words.size(); i++) {        // Iterates through messages to find most common message
                     count = 1;
-                    for (int j = i+1; j < words.size(); j++) {
+                    for (int j = i + 1; j < words.size(); j++) {
                         if (words.get(i).equals(words.get(j))) {
                             count++;
                         }
@@ -118,10 +130,12 @@ public class DashFrame extends JFrame implements Runnable {
             ascending = true;
 
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Can't find your dashboard :(\nPlease exit the dashboard", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null,
+                    "Can't find your dashboard :(" +
+                    "\nPlease exit the dashboard", "Error", JOptionPane.ERROR_MESSAGE);
         }
 
-        JLabel dashboardPanel = new JLabel("              " + output);
+        dashboardPanel = new JLabel("              " + output);
         frame.add(dashboardPanel, BorderLayout.CENTER);
 
         JPanel bottom = new JPanel();
